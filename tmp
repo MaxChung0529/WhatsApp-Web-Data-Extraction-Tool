@@ -1,0 +1,174 @@
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
+from insert import insert
+
+landing_wrapper_class = "landing-wrapper"
+logged_in = "_3WByx"
+user_query = '''//div[@class="_21S-L"]/div[@class="Mk0Bp _30scZ"]/span[@class='ggj6brxn gfz4du6o r7fjleex g0rxnol2 lhj4utae le5p0ye3 l7jjieqr _11JPr'][@dir="auto"]'''
+
+messages_query = '''//div[@role="row"]//div[@class="message-out focusable-list-item _1AOLJ _2UtSC _1jHIY"]//div[@class="UzMP7 _1uv-a _3m5cz"]//div[@class="_1BOF7 _2AOIt"]
+|//div[@role="row"]//div[@class="message-in focusable-list-item _1AOLJ _2UtSC _1jHIY"]//div[@class="UzMP7 _1uv-a _3m5cz"]//div[@class="_1BOF7 _2AOIt"]
+|//div[@role="row"]//div[@class="message-out focusable-list-item _1AOLJ _2UtSC _1jHIY"]//div[@class="UzMP7 _1uv-a"]//div[@class="_1BOF7 _2AOIt"]
+|//div[@role="row"]//div[@class="message-in focusable-list-item _1AOLJ _2UtSC _1jHIY"]//div[@class="UzMP7 _1uv-a"]//div[@class="_1BOF7 _2AOIt"]'''
+
+pics_query = '''//div[@class="cm280p3y ktbp76dp ocd2b0bc folpon7g aa0kojfi snweb893 g0rxnol2 jnl3jror"]//div[1]//div[@class="gndfcl4n l8fojup5 paxyh2gw sfeitywo cqsf3vkf p357zi0d ac2vgrno laorhtua gfz4du6o r7fjleex g0rxnol2"]//div[@class="g0rxnol2 ln8gz9je ppled2lx"]//div[@class="lhggkp7q jnl3jror p357zi0d gndfcl4n ac2vgrno ln8gz9je ppled2lx"][2]//img[1]
+|//div[@class="cm280p3y eu4mztcy ocd2b0bc folpon7g aa0kojfi snweb893 g0rxnol2 jnl3jror"]//div[1]//div[@class="gndfcl4n l8fojup5 paxyh2gw sfeitywo cqsf3vkf p357zi0d ac2vgrno laorhtua gfz4du6o r7fjleex g0rxnol2"]//div[@class="g0rxnol2 ln8gz9je ppled2lx"]//div[@class="lhggkp7q jnl3jror p357zi0d gndfcl4n ac2vgrno ln8gz9je ppled2lx"][2]//img[1]'''
+
+top_row = '''//div[@role="row"]//div[@class="CzM4m _2zFLj"]//div[@class="_2OvAm focusable-list-item _2UtSC _1jHIY"]'''
+text_class = "_11JPr selectable-text copyable-text"
+contact_list = "_199zF _3j691"
+title_class = "Mk0Bp _30scZ"
+
+import sqlite3
+
+con = sqlite3.connect("sqlite.db")
+cur = con.cursor()
+
+cur.execute('''DROP TABLE IF EXISTS messages''')
+
+cur.execute('''CREATE TABLE IF NOT EXISTS messages
+            (time TEXT NOT NULL,
+                 sender TEXT NOT NULL,
+                 texts TEXT NOT NULL)''')
+
+
+def get_users(driver):
+    #Saving the defined contact name from your WhatsApp chat in user variable
+    users = driver.find_elements(By.XPATH, user_query)
+    print(len(users))
+    print('======================================================================\n')
+    #users = driver.find_elements(By.XPATH, '//span[@title!=""][@dir = "auto"]')
+
+    get_chats(driver, users)
+
+def get_chats(driver, users):
+
+    for user in users:
+        clicked = False
+        while not (clicked):
+            try:
+                user.click()
+                clicked = True
+
+                driver.implicitly_wait(20)
+
+                chat_pane = driver.find_element(By.CLASS_NAME, "_3B19s")
+
+                print('======================================================================\n')
+
+                reachedTop = False
+                global SCROLL_SIZE
+
+                scrollBy = SCROLL_SIZE
+
+
+                try:
+                    messages = WebDriverWait(driver,15).until(
+                        EC.presence_of_all_elements_located((By.XPATH, messages_query))
+                    )
+                    pics = WebDriverWait(driver,15).until(
+                        EC.presence_of_all_elements_located((By.XPATH, pics_query))
+                    )
+                finally:
+                    print("All texts located")
+
+                print(len(messages))
+                print(len(pics))
+
+                for message in messages:
+
+                    sender = message.find_element(By.XPATH,'span[1]').get_attribute('aria-label')
+                    print(sender)
+
+                    time_sent = message.find_element(By.XPATH, 'div/div[@class="cm280p3y to2l77zo n1yiu2zv c6f98ldp ooty25bp oq31bsqd"]/div[@class="copyable-text"]').get_attribute('data-pre-plain-text')
+                    print(time_sent)
+
+                    text_sent = message.find_element(By.XPATH, 'div/div[@class="cm280p3y to2l77zo n1yiu2zv c6f98ldp ooty25bp oq31bsqd"]/div[@class="copyable-text"]/div[@class="_21Ahp"]/span[@class="_11JPr selectable-text copyable-text"]/span').text
+                    print(text_sent)
+
+                    insert(time_sent,sender,text_sent, con, cur)
+
+                    print('======================================================================\n')
+
+                for pic in pics:
+                    print(pic.get_attribute('src'))
+
+                chat_pane = driver.find_element(By.XPATH, '//div[@class="n5hs2j7m oq31bsqd gx1rr48f qh5tioqs"]')
+                chat_pane.click()
+
+                while not reachedTop:
+                    driver.execute_script("arguments[0].scrollTop += " + str(scrollBy) + ';', chat_pane)
+                    WebDriverWait(driver,2)
+                    scrollBy += SCROLL_SIZE;
+                    reachedTop = driver.find_element(By.XPATH, top_row) != None
+
+
+
+
+                #clicked = False
+                #f.write('======================================================================\n')
+                #f.close()
+                #msg_box = driver.find_element(By.CLASS_NAME,'_3Uu1_')
+                #msg_box.send_keys('')   #Get into the conversation
+
+                break
+            except Exception as e:
+                #driver.execute_script('window.scrollBy(0,-1500)', chat_list)
+                print(e)
+                #print("something wrong")
+                break
+
+    con.commit()
+    con.close()
+
+
+
+def find_contacts_name(driver):
+    contact_list = driver.find_elements(By.XPATH,'//div[@class = "' + contact_list + '"]')
+    for contact in contact_list:
+        contact_name = contact.find_element(By.XPATH, '//div[@class = "' + title_class + '"]//span[1]').get_attribute('title')
+        print(contact_name.encode('utf-8'))
+
+
+
+global SCROLL_SIZE
+SCROLL_SIZE = 600
+
+options = webdriver.ChromeOptions()
+options.add_experimental_option("detach", True)
+
+
+driver = webdriver.Chrome(options=options,service=Service(ChromeDriverManager().install()))
+driver.get("https://web.whatsapp.com/")
+wait = WebDriverWait(driver, 600)
+
+
+try:
+    element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, landing_wrapper_class)) #Check if it has arrived at the login page yet
+    )
+finally:
+    print("Login Page")
+
+
+while True:
+    try:
+        form = driver.find_element(By.CLASS_NAME,logged_in)  #Check if user has logged in yet by checking for classes that only appears in logged in interface
+
+        break
+
+        pageSource = (driver.page_source).encode('utf-8')
+        print(pageSource)
+    except NoSuchElementException:
+        continue
+
+
+get_users(driver)
