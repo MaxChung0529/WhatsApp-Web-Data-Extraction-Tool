@@ -1,4 +1,6 @@
-src = "blob:https://web.whatsapp.com/4e6cff1a-8c40-442d-b7c4-473d81b57db9"
-split_src = src.split("/")
+print("I'm here")
 
-print(split_src[len(split_src)-1])
+text = 'It’s no big deal'
+text = text.replace("’","'")
+
+print(text.encode('utf-8').decode('cp1252'))
