@@ -1,6 +1,5 @@
-print("I'm here")
+date = "[12:29, 17/11/2023]"
 
-text = 'It’s no big deal'
-text = text.replace("’","'")
+date = date.split(", ")[1].replace("]","")
 
-print(text.encode('utf-8').decode('cp1252'))
+print(date)

@@ -1,3 +1,5 @@
+import tkinter as tk
+from tkinter import ttk
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -29,6 +31,13 @@ global message_elements
 global entities
 global con
 global cur
+global contacts
+global window
+global result_label
+global main_frame
+global chat_select_frame
+global var
+contacts = []
 entities = []
 messages = []
 message_elements = []
@@ -48,10 +57,8 @@ messages_query = '''//div[@role="row"]//div[@class="message-out focusable-list-i
 |//div[@role="row"]//div[@class="message-out focusable-list-item _1AOLJ _2UtSC _1jHIY"]//div[@class="UzMP7 _1uv-a"]//div[@class="_1BOF7 _2AOIt"]
 |//div[@role="row"]//div[@class="message-in focusable-list-item _1AOLJ _2UtSC _1jHIY"]//div[@class="UzMP7 _1uv-a"]//div[@class="_1BOF7 _2AOIt"]'''
 
-pic_query = '''//div[@role="row"]/div[@class="CzM4m _2zFLj _3sxvM"]/div[@class="_3EyT- message-in focusable-list-item _1AOLJ _2UtSC _1jHIY"]/div[@class="UzMP7 _27hEJ"]/div[@class="_1BOF7 _2AOIt"]
-|//div[@role="row"]/div[@class="CzM4m _2zFLj"]/div[@class="_3EyT- message-out focusable-list-item _1AOLJ _2UtSC _1jHIY"]/div[@class="UzMP7 _27hEJ _3m5cz"]/div[@class="_1BOF7 _2AOIt"]
-|//div[@role="row"]/div[@class="CzM4m _2zFLj"]/div[@class="_3EyT- message-in focusable-list-item _1AOLJ _2UtSC _1jHIY"]/div[@class="UzMP7 _27hEJ _3m5cz"]/div[@class="_1BOF7 _2AOIt"]'''
-
+pic_query = '''//div[@role="row"]//div[@class="CzM4m _2zFLj"]//div[@class="_3EyT- message-out focusable-list-item _1AOLJ _2UtSC _1jHIY"]//div[@class="UzMP7 _27hEJ _3m5cz"]//div[@class = "_1BOF7 _2AOIt"]
+|//div[@role="row"]//div[@class="CzM4m _2zFLj _3sxvM"]//div[@class="_3EyT- message-in focusable-list-item _1AOLJ _2UtSC _1jHIY"]//div[@class="UzMP7 _27hEJ"]//div[@class = "_1BOF7 _2AOIt"]'''
 
 top_row = '''//div[@role="row"]//div[@class="CzM4m _2zFLj"]//div[@class="_2OvAm focusable-list-item _2UtSC _1jHIY"]'''
 text_class = "_11JPr selectable-text copyable-text"
@@ -195,10 +202,13 @@ def anonymise(text):
     # if (len(list(masked_doc.ents)) > 0):
     #     displacy.serve(masked_doc, style="ent",auto_select_port=True)    
 
-def extract_images(split_src, image_src, driver):
-    # sender = pic.find_element(By.XPATH, 'span[1]').get_attribute('aria-label')
+def extract_images(pic,driver):
+    sender = pic.find_element(By.XPATH, 'span[1]').get_attribute('aria-label')
 
-    # time_sent = pic.find_element(By.XPATH, 'div[1]/div[1]/div[@class="dpkuihx7 lhggkp7q j2mzdvlq b9fczbqn"]/div[1]/span[1]').text
+    time_sent = pic.find_element(By.XPATH, 'div[1]/div[1]/div[@class="dpkuihx7 lhggkp7q j2mzdvlq b9fczbqn"]/div[1]/span[1]').text
+
+    image_src = pic.find_element(By.XPATH, 'div[1]/div[1]/div[1]/div[1]/div[2]/img[1]').get_attribute('src')
+    split_src = str(image_src).split("/")
 
     result = driver.execute_async_script("""
                         var uri = arguments[0];
@@ -223,15 +233,37 @@ def extract_contact(driver):
     #Get contact names
     contacts = driver.find_elements(By.XPATH, '//div[@class="_21S-L"]//div[@class="Mk0Bp _30scZ"]//span[1]')
     return contacts
+  
 
-def main():
+def btn_function():
+    print("Start Extraction...")
+
+def select():
+
+    select = "You've selected " + contacts[var.get()]  
+
+    result_label.config(text= select)
+    
+        
+def go_page1():
+    main_frame.pack_forget()
+
+    contact_radio_btns = []
+
+    chat_select_frame.pack(expand= True)
+    
+    for contact in contacts:
+        check_box = tk.Checkbutton(chat_select_frame, text = contact, onvalue= 1, offvalue= 0)
+        check_box.pack()
+        contact_radio_btns.append(check_box)
+
+def extract():
 
     cur.execute('''DROP TABLE IF EXISTS messages''')
     cur.execute('''DROP TABLE IF EXISTS entities''')
 
     cur.execute('''CREATE TABLE IF NOT EXISTS messages
                 (chat TEXT NOT NULL,
-                    date TEXT NOT NULL,
                     time TEXT NOT NULL,
                     sender TEXT NOT NULL,
                     texts TEXT NOT NULL)''')
@@ -328,15 +360,13 @@ def main():
                         
                         time_and_sender = time_and_sender.replace("] ","]|").split("|")
                         
-
-                        date_sent = time_and_sender[0].split(", ")[1].replace("]","")
-                        time_sent = time_and_sender[0].split(", ")[0].replace("[","")
-                        sender = time_and_sender[1].replace(": ","").replace("['","").replace("']","")
+                        time_sent = time_and_sender[0]
+                        sender = time_and_sender[1].replace(":","")
 
                         text_sent = message.find_element(By.XPATH, 'div/div[@class="cm280p3y to2l77zo n1yiu2zv c6f98ldp ooty25bp oq31bsqd"]/div[@class="copyable-text"]/div[@class="_21Ahp"]/span[@class="_11JPr selectable-text copyable-text"]/span').text
                         text_sent = text_sent.replace("’","'")
 
-                        message_detail = (name.text, date_sent, time_sent, sender, text_sent)
+                        message_detail = (name.text, sender, time_sent, text_sent)
 
                         if (text_sent != None and (not message_detail in message_elements)):
                             message_elements.append(message_detail)
@@ -350,46 +380,66 @@ def main():
         try:
             pics = driver.find_elements(By.XPATH, pic_query)
             for pic in pics:
-
-                img = pic.find_element(By.XPATH, 'div[1]/div[1]/div[1]/div[1]/div[2]/img[1]')
-                
-                image_src = img.get_attribute('src')
-
-                if (not img.get_attribute('alt') == ""):
-
-                    time_and_sender = pic.find_element(By.XPATH, 'div[1]').get_attribute('data-pre-plain-text')                          
-                    time_and_sender = time_and_sender.replace("] ","]|").split("|")
-                        
-                    date_sent = time_and_sender[0].split(", ")[1].replace("]","")
-                    time_sent = time_and_sender[0].split(", ")[0].replace("[","")
-                    sender = time_and_sender[1].replace(": ","").replace("['","").replace("']","")
-
-                    text_sent = img.get_attribute('alt').replace("’","'")
-
-                    
-                    message_detail = (name.text, date_sent, time_sent, sender, text_sent)
-                        
-                    if (text_sent != None and (not message_detail in message_elements)):
-                        message_elements.append(message_detail)
-
-                split_src = str(image_src).split("/")
-
-                extract_images(split_src, image_src, driver)
+                extract_images(pic,driver)
         except NoSuchElementException:
             continue
 
     for el in message_elements:
-        #print(el[2])
-        cur.execute('INSERT INTO messages (chat, date, time, sender, texts) VALUES (?,?,?,?,?)',(el[0],str(el[1]),str(el[2]),str([el[3]]),anonymise(el[4])))  
+        print(el[2])
+        cur.execute('INSERT INTO messages (chat, time, sender, texts) VALUES (?,?,?,?)',(el[0],str(el[2]),str(el[1]),anonymise(el[3])))  
         con.commit()  
 
     print("===========================================")    
         
     for el in entities:
         print(el)
-  
+
+    go_page1()    
+
+
+
+def main():
+
+    cur.execute('''DROP TABLE IF EXISTS messages''')
+    cur.execute('''DROP TABLE IF EXISTS entities''')
+
+    cur.execute('''CREATE TABLE IF NOT EXISTS messages
+                (chat TEXT NOT NULL,
+                    time TEXT NOT NULL,
+                    sender TEXT NOT NULL,
+                    texts TEXT NOT NULL)''')
+    
+    cur.execute('''CREATE TABLE IF NOT EXISTS entities
+                (category TEXT NOT NULL,
+                    text TEXT NOT NULL)''')
+
+    #Window initialisation
+    window = tk.Tk()
+    window.title('DATA EXTRACTION')
+    window.geometry('1280x720')
+
+    var = tk.IntVar()
+
+    #Main frame to start
+    main_frame = ttk.Frame(window, width= 1280, height= 720)
+    main_frame.pack()
+
+    start_btn = tk.Button(master= main_frame, height= 4, width= 30,  text= "Start extraction", command= extract)
+    start_btn.place(relx=0.5, rely=0.5, anchor= "center")
+
+    #Chat selection page
+    chat_select_frame = ttk.Frame(window)
+
+    page1_label = ttk.Label(master= chat_select_frame, text= "Select chats you want to extract")
+    page1_label.pack()
+
+
+    result_label = ttk.Label(master= chat_select_frame)
+    result_label.pack()
+
+    #Run
+    window.mainloop()
+
 
 if __name__ == '__main__':
     main()
-            
-
