@@ -1,5 +1,9 @@
-date = "[12:29, 17/11/2023]"
+import emoji
 
-date = date.split(", ")[1].replace("]","")
+def convert_emoji_to_text(emoji_text):
+    text_with_emoji = emoji.demojize(emoji_text)
+    return text_with_emoji
 
-print(date)
+emoji_text = "I love Python! 😍"
+converted_text = convert_emoji_to_text(emoji_text)
+print(converted_text)

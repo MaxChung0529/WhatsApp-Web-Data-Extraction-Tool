@@ -235,9 +235,6 @@ def extract_contact(driver):
     return contacts
   
 
-def btn_function():
-    print("Start Extraction...")
-
 def select():
 
     select = "You've selected " + contacts[var.get()]  
@@ -245,7 +242,7 @@ def select():
     result_label.config(text= select)
     
         
-def go_page1():
+def go_page1(main_frame, chat_select_frame):
     main_frame.pack_forget()
 
     contact_radio_btns = []
@@ -396,7 +393,18 @@ def extract():
 
     go_page1()    
 
+def overview(main_frame, chat_select_frame):
+    main_frame.pack_forget()
 
+    contact_radio_btns = []
+
+    chat_select_frame.pack(expand= True)
+    
+    for contact in contacts:
+        check_box = tk.Checkbutton(chat_select_frame, text = contact, onvalue= 1, offvalue= 0)
+        check_box.pack()
+        contact_radio_btns.append(check_box)
+    
 
 def main():
 
@@ -424,7 +432,7 @@ def main():
     main_frame = ttk.Frame(window, width= 1280, height= 720)
     main_frame.pack()
 
-    start_btn = tk.Button(master= main_frame, height= 4, width= 30,  text= "Start extraction", command= extract)
+    start_btn = tk.Button(master= main_frame, height= 4, width= 30,  text= "Start extraction", command= lambda:overview(main_frame,chat_select_frame))
     start_btn.place(relx=0.5, rely=0.5, anchor= "center")
 
     #Chat selection page
