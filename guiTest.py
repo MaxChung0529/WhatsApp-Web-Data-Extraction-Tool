@@ -1,11 +1,86 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import *
+import math
 import sqlite3
+from PIL import ImageTk, Image
+import os
 
+global con
+global cur
+global btns
+global lbls
+global btn_font_size_sml
+global btn_font_size_md
+global btn_font_size_lg
+global font_btns
+global current_font_size
 
-def msg_page():
-    destroy()
+btn_font_size_sml = 10
+btn_font_size_md = 15
+btn_font_size_lg = 20
+lbl_font_size_sml = 12
+lbl_font_size_md = 15
+lbl_font_size_lg = 24
+current_font_size = btn_font_size_md
+
+btns = []
+lbls = []
+font_btns = []
+
+con = sqlite3.connect("sqlite.db")
+cur = con.cursor()
+
+def pop_btns():
+    global btns
+    if len(btns) > 4:
+        btns = btns[:4]
+
+def choose_btn(button):
+    pop_btns()
+    for btn in btns:
+        btn.configure(bg= "White")
+    if button != None:
+        button.configure(bg= "#148eff")
+
+def change_font_size(size, font_btn):
+    global current_font_size
+
+    if size == "LARGE":
+        btn_size = btn_font_size_lg
+        lbl_size = btn_font_size_lg
+        current_font_size = btn_font_size_lg
+    elif size == "MIDDLE":
+        btn_size = btn_font_size_md
+        lbl_size = lbl_font_size_md
+        current_font_size = btn_font_size_md
+    elif size == "SMALL":
+        btn_size = btn_font_size_sml
+        lbl_size = btn_font_size_sml
+        current_font_size = btn_font_size_sml
+
+    for button in font_btns:
+        button.configure(bg= "White")
+    font_btn.configure(bg= "#148eff")
+
+    for btn in btns:
+        btn.configure(font=("Arial", btn_size))
+    for lbl in lbls:
+        lbl.configure(font=("Arial", lbl_size))    
+
+def show_num(num, dates_frame):
+    global lbls
+
+    show_num = ttk.Label(dates_frame, text= str(num), font=("Arial", current_font_size), background= "#fdfdfd")
+    lbls.append(show_num)
+    show_num.grid(row= 1, column= 1, rowspan= 2)
+
+def msg_page(detail_header, content_frame, btn):
+    choose_btn(btn)
+    destroy(content_frame)
+    pop_btns()
+    global lbls
+    lbls = []
 
     #Query to find the chat names
     contact_query = '''SELECT DISTINCT chat from messages
@@ -19,22 +94,31 @@ def msg_page():
 
     detail_header.config(text= "Chat analysis")
 
-    combo_frame = tk.Frame(content_frame, width= 250, height= 350, highlightthickness= 2, highlightbackground= "Gray")
+    combo_frame = tk.Frame(content_frame, width= 250, height= 550, highlightthickness= 2, highlightbackground= "Gray")
     combo_frame.propagate(False)
     combo_frame.place(relx= 0.15, rely= 0.5, anchor= "center")
 
     #Choose categories
-    chat_label = ttk.Label(combo_frame, text= "Choose the chat you want", font=("Arial", 15))
-    chat_label.place(relx= 0.5, rely= 0.35, anchor= "center")
+    chat_label = ttk.Label(combo_frame, text= "Choose the chat you want", font=("Arial", current_font_size), wraplength= 200)
+    chat_label.place(relx= 0.5, rely= 0.3, anchor= "center")
+    lbls.append(chat_label)
 
-    chats = ttk.Combobox(combo_frame, state= "readonly", values= contacts, width= 15, font= ("Arial", 12))
+    chats = ttk.Combobox(combo_frame, state= "readonly", values= contacts, width= 15, font= ("Arial", current_font_size))
     chats.place(relx= 0.5, rely= 0.5, anchor= "center")
+    lbls.append(chats)
 
-    chats_btn = ttk.Button(combo_frame, text= "Show", command= lambda:get_msg_data(chats.get()), width= 20)
-    chats_btn.place(relx= 0.5, rely= 0.6, anchor= "center")
+    chats_btn = tk.Button(combo_frame, text= "Show", command= lambda:get_msg_data(chats.get(), content_frame), width= 12, font= ("Arial", current_font_size), relief= RAISED)
+    chats_btn.place(relx= 0.5, rely= 0.8, anchor= "center")
+    btns.append(chats_btn)
 
-def get_msg_data(contact_name):
+def get_msg_data(contact_name, content_frame):
+
+    global lbls
+    global btns
     
+    if contact_name == "":
+        return
+
     #Find number of messages sent by both sides
     chat_num_query = f'''SELECT sender, COUNT(*) from messages
                         WHERE chat = "{contact_name}"
@@ -42,16 +126,18 @@ def get_msg_data(contact_name):
     
     chat_results = cur.execute(chat_num_query)
 
-    keywords_frame = tk.Frame(content_frame, width= 500, height= 600, background= "White", highlightbackground= "Gray", highlightthickness= 2)
+    keywords_frame = tk.Frame(content_frame, width= 700, height= 600, background= "White", highlightbackground= "Gray", highlightthickness= 2)
     keywords_frame.propagate(False)
     keywords_frame.grid_propagate(False)
     keywords_frame.place(relx= 0.6, rely= 0.5, anchor= "center")
     keywords_frame.grid_columnconfigure(0, weight= 1)
     keywords_frame.grid_columnconfigure(1, weight= 1)
 
-    for i in range(0,10):
-        keywords_frame.grid_rowconfigure(i, weight= 1)
-
+    for i in range(0,11):
+        if i < 11:
+            keywords_frame.grid_rowconfigure(i, weight= 1)
+        else:
+            keywords_frame.grid_rowconfigure(i, weight= 2)
 
     msg_num = 0
     user_num = 0
@@ -65,20 +151,26 @@ def get_msg_data(contact_name):
             user_num += result[1]    
 
     #Total messages sent
-    total_label = ttk.Label(keywords_frame, text= "Total messages sent: ", font=("Arial", 15))
+    total_label = ttk.Label(keywords_frame, text= "Total messages sent: ", font=("Arial", current_font_size), background= "#fdfdfd")
     total_label.grid(row= 0, column= 0)
-    num_label = ttk.Label(keywords_frame, text= str(msg_num), font=("Arial", 15))
+    lbls.append(total_label)
+    num_label = ttk.Label(keywords_frame, text= str(msg_num), font=("Arial", current_font_size), background= "#fdfdfd")
     num_label.grid(row= 0, column= 1)
+    lbls.append(num_label)
     
-    user_label = ttk.Label(keywords_frame, text= "No. messages sent by you:", font=("Arial", 15))
+    user_label = ttk.Label(keywords_frame, text= "No. messages sent by you:", font=("Arial", current_font_size), background= "#fdfdfd")
     user_label.grid(row= 1, column= 0)
-    user_num_label = ttk.Label(keywords_frame, text= str(user_num), font=("Arial", 15))
+    lbls.append(user_label)
+    user_num_label = ttk.Label(keywords_frame, text= str(user_num), font=("Arial", current_font_size), background= "#fdfdfd")
     user_num_label.grid(row= 1, column= 1)
+    lbls.append(user_num_label)
     
-    other_user_label = ttk.Label(keywords_frame, text= f"No. messages sent by {contact_name}:", font=("Arial", 15))
+    other_user_label = ttk.Label(keywords_frame, text= f"No. messages sent by {contact_name}:", font=("Arial", current_font_size), background= "#fdfdfd")
     other_user_label.grid(row= 2, column= 0)
-    other_user_num_label = ttk.Label(keywords_frame, text= str(other_user_num), font=("Arial", 15))
+    lbls.append(other_user_label)
+    other_user_num_label = ttk.Label(keywords_frame, text= str(other_user_num), font=("Arial", current_font_size), background= "#fdfdfd")
     other_user_num_label.grid(row= 2, column= 1)
+    lbls.append(other_user_num_label)
 
     # Separator object
     separator = ttk.Separator(keywords_frame, orient='horizontal')
@@ -104,44 +196,118 @@ def get_msg_data(contact_name):
             user_img_num += result[1]    
 
     #Total images sent
-    total_img_label = ttk.Label(keywords_frame, text= "Total images sent: ", font=("Arial", 15))
+    total_img_label = ttk.Label(keywords_frame, text= "Total images sent: ", font=("Arial", current_font_size), background= "#fdfdfd")
     total_img_label.grid(row= 4, column= 0)
-    num_label = ttk.Label(keywords_frame, text= str(img_total), font=("Arial", 15))
+    lbls.append(total_img_label)
+    num_label = ttk.Label(keywords_frame, text= str(img_total), font=("Arial", current_font_size))
     num_label.grid(row= 4, column= 1)
+    lbls.append(num_label)
     
-    user_img_label = ttk.Label(keywords_frame, text= "No. images sent by you:", font=("Arial", 15))
+    user_img_label = ttk.Label(keywords_frame, text= "No. images sent by you:", font=("Arial", current_font_size), background= "#fdfdfd")
     user_img_label.grid(row= 5, column= 0)
-    user_img_num_label = ttk.Label(keywords_frame, text= str(user_img_num), font=("Arial", 15))
+    lbls.append(user_img_label)
+    user_img_num_label = ttk.Label(keywords_frame, text= str(user_img_num), font=("Arial", current_font_size), background= "#fdfdfd")
     user_img_num_label.grid(row= 5, column= 1)
+    lbls.append(user_img_num_label)
     
-    other_user_img_label = ttk.Label(keywords_frame, text= f"No. images sent by {contact_name}:", font=("Arial", 15))
+    other_user_img_label = ttk.Label(keywords_frame, text= f"No. images sent by {contact_name}:", font=("Arial", current_font_size), background= "#fdfdfd")
     other_user_img_label.grid(row= 6, column= 0)
-    other_user_img_num_label = ttk.Label(keywords_frame, text= str(other_user_img_num), font=("Arial", 15))
+    lbls.append(other_user_img_label)
+    other_user_img_num_label = ttk.Label(keywords_frame, text= str(other_user_img_num), font=("Arial", current_font_size), background= "#fdfdfd")
     other_user_img_num_label.grid(row= 6, column= 1)
+    lbls.append(other_user_img_num_label)
+    
+    # Separator object
+    separator = ttk.Separator(keywords_frame, orient='horizontal')
+    separator.grid(row= 7, columnspan= 2, sticky= "ew")
 
+    #Find the number of images sent
+    date_query = f'''SELECT date, COUNT(*) from messages
+                WHERE chat = "{contact_name}" and date != "Unkown"
+                GROUP BY date
+                ORDER BY COUNT(*) desc'''
+    
+    dates = []
 
-def keyword_page():
-    destroy()
+    for result in con.execute(date_query):
+        dates.append(result)
+
+    #Most messages sent in a day
+    most_msg_lbl = ttk.Label(keywords_frame, text= "Most messages sent on: ", font=("Arial", current_font_size), background= "#fdfdfd")
+    most_msg_lbl.grid(row= 8, column= 0)
+    lbls.append(most_msg_lbl)
+    date_label = ttk.Label(keywords_frame, text= str(dates[0][0]), font=("Arial", current_font_size), background= "#fdfdfd")
+    date_label.grid(row= 8, column= 1)
+    lbls.append(date_label)
+
+    date_msg_lbl = ttk.Label(keywords_frame, text= f"No. messages sent on {dates[0][0]}:", font=("Arial", current_font_size), background= "#fdfdfd")
+    date_msg_lbl.grid(row= 9, column= 0)
+    lbls.append(date_msg_lbl)
+    date_msg_num_label = ttk.Label(keywords_frame, text= str(dates[0][1]), font=("Arial", current_font_size), background= "#fdfdfd")
+    date_msg_num_label.grid(row= 9, column= 1)
+    lbls.append(date_msg_num_label)
+    
+    # Separator object
+    separator = ttk.Separator(keywords_frame, orient='horizontal')
+    separator.grid(row= 10, columnspan= 2, sticky= "ew")
+
+    dates_frame = tk.Frame(keywords_frame, height= 100, bg= "White")
+    dates_frame.grid(row= 11, columnspan= 2, sticky= "ew")
+    dates_frame.grid_rowconfigure(0, weight= 1)
+    dates_frame.grid_rowconfigure(1, weight= 1)
+    dates_frame.grid_rowconfigure(2, weight= 1)
+    dates_frame.grid_columnconfigure(0, weight= 1)
+    dates_frame.grid_columnconfigure(1, weight= 1)
+
+    dates_only = []
+    for date in dates:
+        dates_only.append(date[0])     
+
+    dates_lbl = ttk.Label(dates_frame, text="Other dates: ", font=("Arial", current_font_size), background= "#fdfdfd")
+    dates_lbl.grid(row= 0, column= 0)
+    lbls.append(dates_lbl)
+    dates_combo = ttk.Combobox(dates_frame, values= dates_only, width= current_font_size)
+    dates_combo.grid(row= 1, column= 0)
+    show_date_btn = tk.Button(dates_frame, text= "Show",  command= lambda:show_num(dates[dates_only.index(dates_combo.get())][1], dates_frame), width= 10, height= 1, font= ("Arial", current_font_size), relief= RAISED)
+    show_date_btn.grid(row= 2, column= 0)
+    btns.append(show_date_btn)
+
+    show_num_lbl = ttk.Label(dates_frame, text= "No. of messages", font=("Arial", current_font_size), background= "#fdfdfd")
+    show_num_lbl.grid(row= 0, column= 1)
+    lbls.append(show_num_lbl)
+
+def keyword_page(detail_header, content_frame, btn):
+    choose_btn(btn)
+    destroy(content_frame)
+    pop_btns()
+
+    global lbls
+    lbls = []
 
     categories = ["PERSON", "ORG", "GPE", "EVENTS"]
     detail_header.config(text= "Named entities")
 
-    combo_frame = tk.Frame(content_frame, width= 250, height= 350, highlightthickness= 2, highlightbackground= "Gray")
+    combo_frame = tk.Frame(content_frame, width= 250, height= 550, highlightthickness= 2, highlightbackground= "Gray")
     combo_frame.propagate(False)
-    #combo_frame.pack(anchor= "w")
     combo_frame.place(relx= 0.15, rely= 0.5, anchor= "center")
 
     #Choose categories
-    cats_label = ttk.Label(combo_frame, text= "Choose the category of keywords you want", font=("Arial", 15), wraplength= 200)
-    cats_label.place(relx= 0.5, rely= 0.35, anchor= "center")
+    cats_label = ttk.Label(combo_frame, text= "Choose the category of keywords you want", font=("Arial", current_font_size), wraplength= 200)
+    cats_label.place(relx= 0.5, rely= 0.3, anchor= "center")
+    lbls.append(cats_label)
 
-    cats = ttk.Combobox(combo_frame, state= "readonly", values= categories,width= 15, font= ("Arial", 12))
+    cats = ttk.Combobox(combo_frame, state= "readonly", values= categories,width= 15, font= ("Arial", current_font_size))
     cats.place(relx= 0.5, rely= 0.5, anchor= "center")
+    lbls.append(cats)
 
-    cats_btn = ttk.Button(combo_frame, text= "Show", command= lambda:get_keywords(cats.get()), width= 20)
-    cats_btn.place(relx= 0.5, rely= 0.6, anchor= "center")
+    cats_btn = tk.Button(combo_frame, text= "Show", command= lambda:get_keywords(cats.get(), content_frame), width= 12, font= ("Arial", current_font_size), relief= RAISED)
+    cats_btn.place(relx= 0.5, rely= 0.8, anchor= "center")
+    btns.append(cats_btn)
 
-def get_keywords(category):
+def get_keywords(category, content_frame):
+
+    global lbls
+
     #Find entities of that category
     entity_query = f'''SELECT text, COUNT(*) from entities
                             WHERE category="{category}"
@@ -150,7 +316,7 @@ def get_keywords(category):
                             LIMIT 10'''
     
     results = cur.execute(entity_query)
-    keywords_frame = tk.Frame(content_frame, width= 500, height= 600, background= "White", highlightbackground= "Gray", highlightthickness= 2)
+    keywords_frame = tk.Frame(content_frame, width= 700, height= 600, background= "White", highlightbackground= "Gray", highlightthickness= 2)
     keywords_frame.propagate(False)
     keywords_frame.grid_propagate(False)
     keywords_frame.place(relx= 0.6, rely= 0.5, anchor= "center")
@@ -165,74 +331,139 @@ def get_keywords(category):
     separator = ttk.Separator(keywords_frame, orient='vertical')
     separator.grid(rowspan= 11, column= 1, sticky= "ns")
     
-    entity_label = ttk.Label(keywords_frame, text= "Keywords ", font=("Arial", 15))
+    entity_label = ttk.Label(keywords_frame, text= "Keywords ", font=("Arial", current_font_size), background= "#fdfdfd")
     entity_label.grid(row= 0, column= 0)
-    num_label = ttk.Label(keywords_frame, text= " Appearance", font=("Arial", 15))
+    lbls.append(entity_label)
+    num_label = ttk.Label(keywords_frame, text= " Appearance", font=("Arial", current_font_size), background= "#fdfdfd")
     num_label.grid(row= 0, column= 2)
+    lbls.append(num_label)
     
     count = 1
     for row in results:
-        tmp_ent_lbl = ttk.Label(keywords_frame, text= row[0], font=("Arial", 12))
+        tmp_ent_lbl = ttk.Label(keywords_frame, text= row[0], font=("Arial", current_font_size), background= "#fdfdfd")
         tmp_ent_lbl.grid(row= count, column= 0)
-        tmp_num_lbl = ttk.Label(keywords_frame, text= row[1], font=("Arial", 12)) 
+        lbls.append(tmp_ent_lbl)
+        tmp_num_lbl = ttk.Label(keywords_frame, text= row[1], font=("Arial", current_font_size), background= "#fdfdfd") 
         tmp_num_lbl.grid(row= count, column= 2)
+        lbls.append(tmp_num_lbl)
         count += 1
 
-def destroy():
+def main_page(detail_header, content_frame):
+
+    destroy(content_frame)
+    detail_header.config(text= "Home")
+    choose_btn(None)
+    pop_btns()
+
+    global lbls
+    lbls = []
+
+    label1 = tk.Label(content_frame, text= "Keywords - Keywords mentioned in the chats (PERSON, ORGANISATION,...)", font=("Arial", current_font_size))
+    lbls.append(label1)
+    label1.place(relx= 0.5, rely= 0.25, anchor= "center")
+
+    label2 = tk.Label(content_frame, text= "Messages - Overview of chat data (How many messages was sent,...)", font=("Arial", current_font_size))
+    lbls.append(label2)
+    label2.place(relx= 0.5, rely= 0.4, anchor= "center")
+
+    label3 = tk.Label(content_frame, text= "Open Images File - Open the file containing extracted images in file explorer", font=("Arial", current_font_size))
+    lbls.append(label3)
+    label3.place(relx= 0.5, rely= 0.55, anchor= "center")
+
+    label4 = tk.Label(content_frame, text= "Font size buttons - Change font sizes", font=("Arial", current_font_size))
+    lbls.append(label4)
+    label4.place(relx= 0.5, rely= 0.83, anchor= "center")
+    
+
+def destroy(content_frame):
     for frame in content_frame.winfo_children():
         frame.destroy()
 
+def open_images_folder():
+    path = "images"
+    os.startfile(path)
 
+def overview():
 
-con = sqlite3.connect("sqlite.db")
-cur = con.cursor()
+    #Window initialisation
+    window = tk.Tk()
+    window.title('DATA OVERVIEW')
+    window.geometry('1280x720')
+    window.grid_columnconfigure(0, weight= 1)
+    window.grid_columnconfigure(1, weight= 12)
+    window.grid_rowconfigure(0, weight= 1)
 
-#Window initialisation
-window = tk.Tk()
-window.title('DATA EXTRACTION')
-window.geometry('1280x720')
-window.grid_columnconfigure(0, weight= 1)
-window.grid_columnconfigure(1, weight= 12)
-window.grid_rowconfigure(0, weight= 1)
+    #Options
+    option_frame = tk.Frame(window, bg= "#545454",width= 120, padx= 0)
+    option_frame.grid(row= 0, column= 0, sticky= 'nesw')
+    option_frame.grid_propagate(False)
 
-#Options
-#option_frame = tk.Frame(window, width= 200, height= 720, bg= "red")
-option_frame = tk.Frame(window, bg= "#545454", padx= 0, pady= 50)
-option_frame.grid(row= 0, column= 0, sticky= 'nesw')
+    option_frame.grid_columnconfigure(0, weight= 1)
+    option_frame.grid_rowconfigure(0, weight= 5)
+    option_frame.grid_rowconfigure(1, weight= 2)
+    option_frame.grid_rowconfigure(2, weight= 2)
+    option_frame.grid_rowconfigure(3, weight= 2)
+    option_frame.grid_rowconfigure(4, weight= 5)
 
-option_frame.grid_columnconfigure(0, weight= 1)
-option_frame.grid_rowconfigure(0, weight= 5)
-option_frame.grid_rowconfigure(1, weight= 2)
-option_frame.grid_rowconfigure(2, weight= 2)
-option_frame.grid_rowconfigure(3, weight= 2)
-option_frame.grid_rowconfigure(4, weight= 5)
+    btn1 = tk.Button(option_frame, text= "Keywords", command= lambda:keyword_page(detail_header, content_frame, btn1), font=("Arial", btn_font_size_sml), relief= RAISED)
+    btns.append(btn1)
+    btn1.grid(column= 0, row= 1)
 
-keywords_img = PhotoImage(file= "assets\Keywords_btn.png")
-btn1 = ttk.Button(option_frame, image= keywords_img, command= keyword_page)
-btn1.grid(column= 0, row= 1)
+    btn2 = tk.Button(option_frame, text="Messages", command= lambda:msg_page(detail_header, content_frame, btn2), font=("Arial", btn_font_size_sml), relief= RAISED)
+    btns.append(btn2)
+    btn2.grid(column= 0, row= 2)
 
-btn2 = ttk.Button(option_frame, text="Messages", command= msg_page)
-btn2.grid(column= 0, row= 2)
+    btn3 = tk.Button(option_frame, text="Images", command= open_images_folder, font=("Arial", btn_font_size_sml), relief= RAISED)
+    btns.append(btn3)
+    btn3.grid(column= 0, row= 3)
 
-btn1 = ttk.Button(option_frame, text="Images", command= destroy)
-btn1.grid(column= 0, row= 3)
+    font_size_frame = tk.Frame(option_frame, bg= "#545454", height= 50)
+    font_size_frame.grid(column= 0, row= 4, sticky= "nesw")
+    font_size_frame.grid_columnconfigure(0, weight= 1)
+    font_size_frame.grid_columnconfigure(1, weight= 1)
+    font_size_frame.grid_columnconfigure(2, weight= 1)
+    font_size_frame.grid_rowconfigure(0, weight= 1)
+    font_size_frame.grid_propagate(False)
 
-detail_frame = tk.Frame(window, bg= "#262626")
-detail_frame.grid(row= 0, column= 1, sticky= "nesw")
+    sml_font_btn = tk.Button(font_size_frame, text="Aa", font=("Arial", btn_font_size_sml), command= lambda: change_font_size("SMALL", sml_font_btn))
+    sml_font_btn.grid(column= 0, row= 0)
+    font_btns.append(sml_font_btn)
 
-detail_frame.grid_columnconfigure(0, weight= 1)
-detail_frame.grid_rowconfigure(0, weight= 1)
-detail_frame.grid_rowconfigure(1, weight= 18)
+    md_font_btn = tk.Button(font_size_frame, text="Aa", font=("Arial", btn_font_size_md), command= lambda: change_font_size("MIDDLE", md_font_btn))
+    md_font_btn.grid(column= 1, row= 0)
+    font_btns.append(md_font_btn)
 
-detail_header = tk.Label(detail_frame, bg= "#0b78de", text= "LABEL", font= ("Arial", 30), padx= 0, pady= 0)
-detail_header.grid(row= 0, column= 0, sticky= "nesw")
+    lg_font_btn = tk.Button(font_size_frame, text="Aa", font=("Arial", btn_font_size_lg), command= lambda: change_font_size("LARGE", lg_font_btn))
+    lg_font_btn.grid(column= 2, row= 0)
+    font_btns.append(lg_font_btn)
 
-content_frame = tk.Frame(detail_frame)
-content_frame.propagate(False)
-content_frame.grid(row= 1, column= 0, sticky= "nesw")
-content_frame.grid_columnconfigure(0, weight= 1)
-content_frame.grid_columnconfigure(1, weight= 4)
-content_frame.grid_rowconfigure(0, weight= 1)
+    detail_frame = tk.Frame(window, bg= "#262626")
+    detail_frame.grid_propagate(False)
+    detail_frame.grid(row= 0, column= 1, sticky= "nesw")
 
-#Run
-window.mainloop()
+    detail_frame.grid_columnconfigure(0, weight= 1)
+    detail_frame.grid_rowconfigure(0, weight= 1)
+    detail_frame.grid_rowconfigure(1, weight= 18)
+
+    detail_header = tk.Label(detail_frame, bg= "#0b78de", text= "Home", font= ("Arial", 30), padx= 0, pady= 0)
+    detail_header.grid(row= 0, column= 0, sticky= "nesw")
+
+    content_frame = tk.Frame(detail_frame)
+    content_frame.propagate(False)
+    content_frame.grid(row= 1, column= 0, sticky= "nesw")
+    content_frame.grid_columnconfigure(0, weight= 1)
+    content_frame.grid_columnconfigure(1, weight= 4)
+    content_frame.grid_rowconfigure(0, weight= 1)
+
+    home_btn = tk.Button(option_frame, text= "Home", font= ("Arial", current_font_size), command= lambda: main_page(detail_header, content_frame))
+    btns.append(home_btn)
+    home_btn.grid(column= 0, row= 0)
+
+    main_page(detail_header, content_frame)
+
+    change_font_size("MIDDLE", md_font_btn)
+    #Run
+    window.mainloop()
+
+if __name__ == '__main__':
+    overview()    

@@ -26,7 +26,19 @@ img_query = f'''SELECT sender, COUNT(*) from messages
                 AND chat = "{contact_name}"
                 GROUP BY sender'''
 
-results = cur.execute(img_query)
+
+contact_name = "Max"
+src_query = f'''SELECT img_src from messages
+                WHERE  (type = "Image" OR type = "Images and texts")
+                AND chat = "{contact_name}"'''
+
+contact_name = "Max"
+date_query = f'''SELECT date, COUNT(*) from messages
+                WHERE chat = "{contact_name}" and date != "Unkown"
+                GROUP BY date
+                ORDER BY COUNT(*) desc'''
+
+results = cur.execute(date_query)
 
 #print(query)
 
