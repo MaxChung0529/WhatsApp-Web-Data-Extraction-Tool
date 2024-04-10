@@ -33,8 +33,8 @@ cur = con.cursor()
 
 def pop_btns():
     global btns
-    if len(btns) > 4:
-        btns = btns[:4]
+    if len(btns) > 5:
+        btns = btns[:5]
 
 def choose_btn(button):
     pop_btns()
@@ -133,8 +133,8 @@ def get_msg_data(contact_name, content_frame):
     keywords_frame.grid_columnconfigure(0, weight= 1)
     keywords_frame.grid_columnconfigure(1, weight= 1)
 
-    for i in range(0,11):
-        if i < 11:
+    for i in range(0,15):
+        if i < 15:
             keywords_frame.grid_rowconfigure(i, weight= 1)
         else:
             keywords_frame.grid_rowconfigure(i, weight= 2)
@@ -178,7 +178,7 @@ def get_msg_data(contact_name, content_frame):
 
     #Find the number of images sent
     img_query = f'''SELECT sender, COUNT(*) from messages
-                    WHERE (type = "Image" OR type = "Images and texts")
+                    WHERE (type = "Image" OR type = "Image and texts")
                     AND chat = "{contact_name}"
                     GROUP BY sender'''
     
@@ -221,7 +221,52 @@ def get_msg_data(contact_name, content_frame):
     separator = ttk.Separator(keywords_frame, orient='horizontal')
     separator.grid(row= 7, columnspan= 2, sticky= "ew")
 
-    #Find the number of images sent
+    #Find the number of videos sent
+    vid_query = f'''SELECT sender, COUNT(*) from messages
+                    WHERE (type = "Video" OR type = "Video and texts")
+                    AND chat = "{contact_name}"
+                    GROUP BY sender'''
+    
+    vid_results = con.execute(vid_query)
+
+    vid_total = 0
+    user_vid_num = 0
+    other_user_vid_num = 0
+
+    for result in vid_results:
+        vid_total += result[1]
+        if (result[0] == contact_name):
+            other_user_vid_num += result[1]
+        else:
+            user_vid_num += result[1]    
+
+    #Total images sent
+    total_vid_label = ttk.Label(keywords_frame, text= "Total videos sent: ", font=("Arial", current_font_size), background= "#fdfdfd")
+    total_vid_label.grid(row= 8, column= 0)
+    lbls.append(total_vid_label)
+    num_label = ttk.Label(keywords_frame, text= str(vid_total), font=("Arial", current_font_size))
+    num_label.grid(row= 8, column= 1)
+    lbls.append(num_label)
+    
+    user_vid_label = ttk.Label(keywords_frame, text= "No. videos sent by you:", font=("Arial", current_font_size), background= "#fdfdfd")
+    user_vid_label.grid(row= 9, column= 0)
+    lbls.append(user_vid_label)
+    user_vid_num_label = ttk.Label(keywords_frame, text= str(user_vid_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    user_vid_num_label.grid(row= 9, column= 1)
+    lbls.append(user_vid_num_label)
+    
+    other_user_vid_label = ttk.Label(keywords_frame, text= f"No. videos sent by {contact_name}:", font=("Arial", current_font_size), background= "#fdfdfd")
+    other_user_vid_label.grid(row= 10, column= 0)
+    lbls.append(other_user_vid_label)
+    other_user_vid_num_label = ttk.Label(keywords_frame, text= str(other_user_vid_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    other_user_vid_num_label.grid(row= 10, column= 1)
+    lbls.append(other_user_vid_num_label)
+    
+    # Separator object
+    separator = ttk.Separator(keywords_frame, orient='horizontal')
+    separator.grid(row= 11, columnspan= 2, sticky= "ew")
+
+    #Find the number of messages sent grouped by date
     date_query = f'''SELECT date, COUNT(*) from messages
                 WHERE chat = "{contact_name}" and date != "Unkown"
                 GROUP BY date
@@ -234,25 +279,25 @@ def get_msg_data(contact_name, content_frame):
 
     #Most messages sent in a day
     most_msg_lbl = ttk.Label(keywords_frame, text= "Most messages sent on: ", font=("Arial", current_font_size), background= "#fdfdfd")
-    most_msg_lbl.grid(row= 8, column= 0)
+    most_msg_lbl.grid(row= 12, column= 0)
     lbls.append(most_msg_lbl)
     date_label = ttk.Label(keywords_frame, text= str(dates[0][0]), font=("Arial", current_font_size), background= "#fdfdfd")
-    date_label.grid(row= 8, column= 1)
+    date_label.grid(row= 12, column= 1)
     lbls.append(date_label)
 
     date_msg_lbl = ttk.Label(keywords_frame, text= f"No. messages sent on {dates[0][0]}:", font=("Arial", current_font_size), background= "#fdfdfd")
-    date_msg_lbl.grid(row= 9, column= 0)
+    date_msg_lbl.grid(row= 13, column= 0)
     lbls.append(date_msg_lbl)
     date_msg_num_label = ttk.Label(keywords_frame, text= str(dates[0][1]), font=("Arial", current_font_size), background= "#fdfdfd")
-    date_msg_num_label.grid(row= 9, column= 1)
+    date_msg_num_label.grid(row= 13, column= 1)
     lbls.append(date_msg_num_label)
     
     # Separator object
     separator = ttk.Separator(keywords_frame, orient='horizontal')
-    separator.grid(row= 10, columnspan= 2, sticky= "ew")
+    separator.grid(row= 14, columnspan= 2, sticky= "ew")
 
     dates_frame = tk.Frame(keywords_frame, height= 100, bg= "White")
-    dates_frame.grid(row= 11, columnspan= 2, sticky= "ew")
+    dates_frame.grid(row= 15, columnspan= 2, sticky= "ew")
     dates_frame.grid_rowconfigure(0, weight= 1)
     dates_frame.grid_rowconfigure(1, weight= 1)
     dates_frame.grid_rowconfigure(2, weight= 1)
@@ -360,19 +405,23 @@ def main_page(detail_header, content_frame):
 
     label1 = tk.Label(content_frame, text= "Keywords - Keywords mentioned in the chats (PERSON, ORGANISATION,...)", font=("Arial", current_font_size))
     lbls.append(label1)
-    label1.place(relx= 0.5, rely= 0.25, anchor= "center")
+    label1.place(relx= 0.5, rely= 0.20, anchor= "center")
 
     label2 = tk.Label(content_frame, text= "Messages - Overview of chat data (How many messages was sent,...)", font=("Arial", current_font_size))
     lbls.append(label2)
-    label2.place(relx= 0.5, rely= 0.4, anchor= "center")
+    label2.place(relx= 0.5, rely= 0.35, anchor= "center")
 
-    label3 = tk.Label(content_frame, text= "Open Images File - Open the file containing extracted images in file explorer", font=("Arial", current_font_size))
+    label3 = tk.Label(content_frame, text= "Images - Open the file containing extracted images in file explorer", font=("Arial", current_font_size))
     lbls.append(label3)
-    label3.place(relx= 0.5, rely= 0.55, anchor= "center")
+    label3.place(relx= 0.5, rely= 0.49, anchor= "center")
 
-    label4 = tk.Label(content_frame, text= "Font size buttons - Change font sizes", font=("Arial", current_font_size))
+    label4 = tk.Label(content_frame, text= "Videos - Open the file containing extracted videos in file explorer", font=("Arial", current_font_size))
     lbls.append(label4)
-    label4.place(relx= 0.5, rely= 0.83, anchor= "center")
+    label4.place(relx= 0.5, rely= 0.63, anchor= "center")
+
+    label5 = tk.Label(content_frame, text= "Font size buttons - Change font sizes", font=("Arial", current_font_size))
+    lbls.append(label5)
+    label5.place(relx= 0.5, rely= 0.85, anchor= "center")
     
 
 def destroy(content_frame):
@@ -381,6 +430,10 @@ def destroy(content_frame):
 
 def open_images_folder():
     path = "images"
+    os.startfile(path)
+
+def open_videos_folder():
+    path = "videos"
     os.startfile(path)
 
 def overview():
@@ -403,7 +456,8 @@ def overview():
     option_frame.grid_rowconfigure(1, weight= 2)
     option_frame.grid_rowconfigure(2, weight= 2)
     option_frame.grid_rowconfigure(3, weight= 2)
-    option_frame.grid_rowconfigure(4, weight= 5)
+    option_frame.grid_rowconfigure(4, weight= 2)
+    option_frame.grid_rowconfigure(5, weight= 5)
 
     btn1 = tk.Button(option_frame, text= "Keywords", command= lambda:keyword_page(detail_header, content_frame, btn1), font=("Arial", btn_font_size_sml), relief= RAISED)
     btns.append(btn1)
@@ -417,8 +471,12 @@ def overview():
     btns.append(btn3)
     btn3.grid(column= 0, row= 3)
 
+    btn4 = tk.Button(option_frame, text="Videos", command= open_videos_folder, font=("Arial", btn_font_size_sml), relief= RAISED)
+    btns.append(btn4)
+    btn4.grid(column= 0, row= 4)
+
     font_size_frame = tk.Frame(option_frame, bg= "#545454", height= 50)
-    font_size_frame.grid(column= 0, row= 4, sticky= "nesw")
+    font_size_frame.grid(column= 0, row= 5, sticky= "nesw")
     font_size_frame.grid_columnconfigure(0, weight= 1)
     font_size_frame.grid_columnconfigure(1, weight= 1)
     font_size_frame.grid_columnconfigure(2, weight= 1)
