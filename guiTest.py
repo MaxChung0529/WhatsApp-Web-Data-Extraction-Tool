@@ -5,6 +5,10 @@ import math
 import sqlite3
 from PIL import ImageTk, Image
 import os
+import matplotlib.pyplot as plt
+import numpy as np
+from sys import platform
+import subprocess
 
 global con
 global cur
@@ -430,21 +434,40 @@ def destroy(content_frame):
 
 def open_images_folder():
     path = "images"
-    os.startfile(path)
+    if platform == "win32":
+        os.startfile(path)
+    elif platform == "darwin":
+        subprocess.call(['open', path])
 
 def open_videos_folder():
     path = "videos"
-    os.startfile(path)
+    if platform == "win32":
+        os.startfile(path)
+    elif platform == "darwin":
+        subprocess.call(['open', path])
 
 def overview():
 
     #Window initialisation
-    window = tk.Tk()
-    window.title('DATA OVERVIEW')
-    window.geometry('1280x720')
+    # window = tk.Tk()
+    # window.title('DATA OVERVIEW')
+    # window.geometry('1280x720')
+    # window.grid_columnconfigure(0, weight= 1)
+    # window.grid_columnconfigure(1, weight= 12)
+    # window.grid_rowconfigure(0, weight= 1)
+
+    windowScreen = tk.Tk()
+    windowScreen.title('DATA OVERVIEW')
+    windowScreen.geometry('1280x720')
+    windowScreen.grid_columnconfigure(0, weight= 1)
+    windowScreen.grid_rowconfigure(0, weight= 1)
+    window = tk.Frame(windowScreen, background= "#FFFFFF")
+    window.grid(row= 0, column= 0, sticky= "nesw")
     window.grid_columnconfigure(0, weight= 1)
     window.grid_columnconfigure(1, weight= 12)
     window.grid_rowconfigure(0, weight= 1)
+    
+    
 
     #Options
     option_frame = tk.Frame(window, bg= "#545454",width= 120, padx= 0)

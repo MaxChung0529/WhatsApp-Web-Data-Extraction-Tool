@@ -1,14 +1,12 @@
 import os
 import shutil
+from datetime import date
+from datetime import timedelta
+import matplotlib.pyplot as plt
+import numpy as np
 
-video_path = "videos"
-images_path = os.path.abspath("images")
-videos_path = os.path.abspath("videos")
-distribute_path = os.path.abspath("distribute")
+x = np.array(["A", "B", "C", "D"])
+y = np.array([3, 8, 1, 10])
 
-shutil.rmtree(images_path)
-os.makedirs(images_path)
-shutil.rmtree(videos_path)
-os.makedirs(videos_path)
-shutil.rmtree(distribute_path)
-os.makedirs(distribute_path)
+plt.plot(x,y)
+plt.show()

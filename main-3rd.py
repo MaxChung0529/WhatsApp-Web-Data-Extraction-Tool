@@ -23,6 +23,7 @@ import os
 import shutil
 import time
 from datetime import date
+from datetime import timedelta
 
 global nlp
 global doc
@@ -256,11 +257,6 @@ def move_file(file_type):
         except PermissionError:
             print("Error")            
 
-def extract_contact(driver):
-    #Get contact names
-    contacts = driver.find_elements(By.XPATH, '//div[@class="_21S-L"]//div[@class="Mk0Bp _30scZ"]//span[1]')
-    return contacts
-
 def main():
 
     clear_folders()
@@ -283,6 +279,7 @@ def main():
 
 
     options = webdriver.ChromeOptions()
+    options.add_argument("--mute-audio")
     options.add_experimental_option("prefs", { "download.default_directory": distribute_path})
     options.add_experimental_option("detach", True)
 
@@ -296,7 +293,6 @@ def main():
         )
     finally:
         print("Login Page")
-
 
     while True:
 
@@ -313,7 +309,6 @@ def main():
 
     #Get contact names
     contacts = driver.find_elements(By.XPATH, '//div[@aria-label = "Chat list"]/div[@role="listitem"]/div[1]/div[1]/div[1]/div[2]/div[@role="gridcell"]//span[@dir="auto"]')
-    #contacts = extract_contact(driver)
     time.sleep(0.5)
 
     for name in contacts:
@@ -387,7 +382,6 @@ def main():
                         
 
                         message_detail = (name.text, date_sent, time_sent, sender, text_sent, "Texts")
-
                         message_elements.append(message_detail)
 
                     except NoSuchElementException:
@@ -425,7 +419,9 @@ def main():
                 date_time = media_details.find_element(By.XPATH, 'div[@class="_ak8j"]/div[1]').text
                 media_date = date_time.split(" at ")[0]
                 if media_date == "Today":
-                    media_date = date.today().strftime("%m/%d/%Y")
+                    media_date = date.today().strftime("%#m/%#d/%Y")
+                elif media_date == "Yesterday":
+                    media_date = (date.today() - timedelta(days= 1)).strftime("%#m/%#d/%Y")
                     
                 media_time = date_time.split(" at ")[1]
 
@@ -440,9 +436,7 @@ def main():
                     if media_text == "":
                         media_type = "Image"    
                     else:
-                        media_type = "Image and texts"   
-
-                    options.add_experimental_option("prefs", { "download.default_directory": images_path})
+                        media_type = "Image and texts"
                         
                 except NoSuchElementException:
                     if media_text == "":
@@ -468,8 +462,8 @@ def main():
                     media_text = media_text.replace("’","'")
 
                     message_detail = (name.text, media_date, media_time, media_sender, media_text, media_type)
-
                     message_elements.append(message_detail)
+
                 except NoSuchElementException:
                     pass    
 
@@ -487,9 +481,11 @@ def main():
 
     for el in message_elements:
         if len(el) == 7:
-            cur.execute('INSERT INTO messages (chat, date, time, sender, texts, type, media_src) VALUES (?,?,?,?,?,?,?)',(el[0],str(el[1]),str(el[2]),str(el[3]),anonymise(el[4]),el[5],el[6]))  
+            cur.execute('INSERT INTO messages (chat, date, time, sender, texts, type, media_src) VALUES (?,?,?,?,?,?,?)'
+                        ,(el[0],str(el[1]),str(el[2]),str(el[3]),anonymise(el[4]),el[5],el[6]))  
         else:
-            cur.execute('INSERT INTO messages (chat, date, time, sender, texts, type, media_src) VALUES (?,?,?,?,?,?,?)',(el[0],str(el[1]),str(el[2]),str(el[3]),anonymise(el[4]),el[5],None))  
+            cur.execute('INSERT INTO messages (chat, date, time, sender, texts, type, media_src) VALUES (?,?,?,?,?,?,?)'
+                        ,(el[0],str(el[1]),str(el[2]),str(el[3]),anonymise(el[4]),el[5],None))  
         con.commit()  
 
     print("===========================================")    
@@ -497,6 +493,8 @@ def main():
     for el in entities:
         print(el)
     
+
+    driver.close()
     overview()    
   
 
