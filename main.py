@@ -10,19 +10,21 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver import ActionChains
 import spacy
-from spacy import displacy
 from spacy.matcher import Matcher
 from spacy.tokens import Span
-import base64
-from insert import insert
 from anonymise import anonymise
 import time
 import sqlite3
-import emoji
-import re
-from guiTest import overview
+from gui import overview
 import tkinter as tk
 from tkinter import ttk
+import os
+import shutil
+import time
+from datetime import date
+from datetime import timedelta
+import matplotlib.pyplot as plt
+import numpy as np
 
 global nlp
 global doc
@@ -36,6 +38,14 @@ global con
 global cur
 global window
 global main_frame
+
+global images_path
+global videos_path
+global distribute_path
+
+images_path = os.path.abspath("images")
+videos_path = os.path.abspath("videos")
+distribute_path = os.path.abspath("distribute")
 
 entities = []
 messages = []
@@ -64,6 +74,11 @@ messages_query = '''//div[@role="row"]/div[1]/div[@class="message-in focusable-l
 pic_query = '''//div[@role="row"]/div[1]/div[@class="_amkz message-out focusable-list-item _amjy _amjz _amjw"]/div[1]/div[@class="_amk6 _amlo"]
 |//div[@role="row"]/div[1]/div[@class="_amkz message-in focusable-list-item _amjy _amjz _amjw"]/div[1]/div[@class="_amk6 _amlo"]'''
 
+video_query = '''//div[@role="row"]/div[1]/div[@class="message-in focusable-list-item _amjy _amjz _amjw"]/div[@class="_amk4 _amkv _amk5"]/div[@class="_amk6 _amlo"]
+|//div[@role="row"]/div[1]/div[@class="message-out focusable-list-item _amjy _amjz _amjw"]/div[@class="_amk4 _amkv _amk5"]/div[@class="_amk6 _amlo"]
+|//div[@role="row"]/div[1]/div[@class="_amkz message-out focusable-list-item _amjy _amjz _amjw"]//div[@class="_amk4 _amkv"]/div[@class="_amk6 _amlo"]
+|//div[@role="row"]/div[1]/div[@class="_amkz message-in focusable-list-item _amjy _amjz _amjw"]//div[@class="_amk4 _amkv"]/div[@class="_amk6 _amlo"]'''
+
 def start_window():
 
     start_btn = ttk.Button(master= main_frame, width= 30,  text= "Start extraction", command= main)
@@ -80,10 +95,6 @@ def loading():
 
     loading_lbl = ttk.Label(master= main_frame, text= "Extracting data...", font=("Arial", 25))
     loading_lbl.place(relx= 0.5, rely= 0.5, anchor= "center")    
-
-def convert_emoji_to_text(emoji_text):
-    text_with_emoji = emoji.demojize(emoji_text)
-    return text_with_emoji
 
 def maskText(masked_text, doc):
     matcher = Matcher(nlp.vocab, validate=True)
@@ -221,36 +232,35 @@ def anonymise(text):
     # if (len(list(masked_doc.ents)) > 0):
     #     displacy.serve(masked_doc, style="ent",auto_select_port=True)    
 
-def extract_images(split_src, image_src, driver):
+def clear_folders():
+    shutil.rmtree(images_path)
+    os.makedirs(images_path)
+    shutil.rmtree(videos_path)
+    os.makedirs(videos_path)
+    shutil.rmtree(distribute_path)
+    os.makedirs(distribute_path)
 
-    result = driver.execute_async_script("""
-                        var uri = arguments[0];
-                        var callback = arguments[1];
-                        var toBase64 = function(buffer){for(var r,n=new Uint8Array(buffer),t=n.length,a=new Uint8Array(4*Math.ceil(t/3)),i=new Uint8Array(64),o=0,c=0;64>c;++c)i[c]="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".charCodeAt(c);for(c=0;t-t%3>c;c+=3,o+=4)r=n[c]<<16|n[c+1]<<8|n[c+2],a[o]=i[r>>18],a[o+1]=i[r>>12&63],a[o+2]=i[r>>6&63],a[o+3]=i[63&r];return t%3===1?(r=n[t-1],a[o]=i[r>>2],a[o+1]=i[r<<4&63],a[o+2]=61,a[o+3]=61):t%3===2&&(r=(n[t-2]<<8)+n[t-1],a[o]=i[r>>10],a[o+1]=i[r>>4&63],a[o+2]=i[r<<2&63],a[o+3]=61),new TextDecoder("ascii").decode(a)};
-                        var xhr = new XMLHttpRequest();
-                        xhr.responseType = 'arraybuffer';
-                        xhr.onload = function(){ callback(toBase64(xhr.response)) };
-                        xhr.onerror = function(){ callback(xhr.status) };
-                        xhr.open('GET', uri);
-                        xhr.send();
-                        """, image_src)
+def move_file(file_type):
+    
+    while True:
+        try:
+            file_names = os.listdir(distribute_path)
 
-    try:
-        final_image = base64.b64decode(result)
-        filename = 'images/' + split_src[len(split_src) - 1] + '.jpg'
-        with open(filename, 'wb') as f:
-            f.write(final_image)
-        return filename   
-    except TypeError:
-        print("WTF")
-        pass     
+            for file_name in file_names:
+                if file_name.lower().endswith('.crdownload') or file_name.lower().endswith('.tmp') :
+                    continue
+                if file_type == "Images":
+                    shutil.move(os.path.join(distribute_path, file_name), os.path.join(images_path, file_name))
 
-def extract_contact(driver):
-    #Get contact names
-    contacts = driver.find_elements(By.XPATH, '//div[@class="_21S-L"]//div[@class="Mk0Bp _30scZ"]//span[1]')
-    return contacts
+                elif file_type == "Videos":
+                    shutil.move(os.path.join(distribute_path, file_name), os.path.join(videos_path, file_name))
+            break        
+        except PermissionError:
+            print("Error")            
 
 def main():
+
+    clear_folders()
 
     cur.execute('''DROP TABLE IF EXISTS messages''')
     cur.execute('''DROP TABLE IF EXISTS entities''')
@@ -262,7 +272,7 @@ def main():
                     sender TEXT NOT NULL,
                     texts TEXT NOT NULL,
                     type TEXT NOT NULL,
-                    img_src TEXT)''')
+                    media_src TEXT)''')
     
     cur.execute('''CREATE TABLE IF NOT EXISTS entities
                 (category TEXT NOT NULL,
@@ -270,6 +280,8 @@ def main():
 
 
     options = webdriver.ChromeOptions()
+    options.add_argument("--mute-audio")
+    options.add_experimental_option("prefs", { "download.default_directory": distribute_path})
     options.add_experimental_option("detach", True)
 
 
@@ -282,7 +294,6 @@ def main():
         )
     finally:
         print("Login Page")
-
 
     while True:
 
@@ -299,7 +310,6 @@ def main():
 
     #Get contact names
     contacts = driver.find_elements(By.XPATH, '//div[@aria-label = "Chat list"]/div[@role="listitem"]/div[1]/div[1]/div[1]/div[2]/div[@role="gridcell"]//span[@dir="auto"]')
-    #contacts = extract_contact(driver)
     time.sleep(0.5)
 
     for name in contacts:
@@ -316,7 +326,6 @@ def main():
             sync_ok_button = driver.find_element(By.XPATH, '//button[@class="emrlamx0 aiput80m h1a80dm5 sta02ykp g0rxnol2 l7jjieqr hnx8ox4h f8jlpxt4 l1l4so3b le5p0ye3 m2gb0jvt rfxpxord gwd8mfxi mnh9o63b qmy7ya1v dcuuyf4k swfxs4et bgr8sfoe a6r886iw fx1ldmn8 orxa12fk bkifpc9x rpz5dbxo bn27j4ou oixtjehm hjo1mxmu snayiamo szmswy5k"]')
             print("FOUND SYNC OK BUTTON")
                             
-            #if (sync_ok_button.text == 'OK'):
             sync_ok_button.click()
             clickedOnBtn = True
             print("CLICKED SYNC OK BUTTON")
@@ -347,10 +356,8 @@ def main():
                 except StaleElementReferenceException:
                     pass
 
-
         try:
             find_message = driver.find_elements(By.XPATH, messages_query)
-            print(len(find_message))
             if (len(find_message) > 0):
                 for message in find_message:
                         
@@ -373,10 +380,8 @@ def main():
                         text_sent = message.find_element(By.XPATH, 'div[1]/div[1]/span[1]/span').text
                         text_sent = text_sent.replace("’","'")
                         
-                        text_sent = convert_emoji_to_text(text_sent)
 
                         message_detail = (name.text, date_sent, time_sent, sender, text_sent, "Texts")
-
                         message_elements.append(message_detail)
 
                     except NoSuchElementException:
@@ -387,60 +392,100 @@ def main():
         except NoSuchElementException:
             continue
 
-        try:
-            pics = driver.find_elements(By.XPATH, pic_query)
-            for pic in pics:
+        profile_btn = driver.find_element(By.XPATH, '//div[@title="Profile details"]')
+        profile_btn.click()
+        
+        contact_detail = driver.find_element(By.XPATH, '//div[@class="_aigv _aig-"]')
 
-                img = pic.find_element(By.XPATH, 'div[1]/div[1]/div[1]/div[1]/div[2]/img')
-                
-                image_src = img.get_attribute('src')
+        time.sleep(2)
 
-                haveText = not img.get_attribute('alt') == ""
+        print(driver.find_element(By.XPATH, '//div[@class="x1emribx x6prxxf x1xojpga"]').text)
 
-                split_src = str(image_src).split("/")
+        if int(driver.find_element(By.XPATH, '//div[@class="x1emribx x6prxxf x1xojpga"]').text) > 0:
 
-                filename = extract_images(split_src, image_src, driver)
+            dialog = contact_detail.find_element(By.XPATH, 'span[1]/div[1]/span[1]/div[1]/div[1]/section[1]/div[@class="x13mwh8y x1q3qbx4 x1wg5k15 xajqne3 x1n2onr6 x1c4vz4f x2lah0s xdl72j9 xyorhqc x13x2ugz x1i80of2 x6x52a7 xxpdul3 x1a8lsjc"]/div[2]')
 
-                if (haveText):
+            first_item = dialog.find_element(By.XPATH, 'div[1]/div[@role="listitem"]')
+            first_item.click()
 
-                    time_and_sender = pic.find_element(By.XPATH, 'div[1]').get_attribute('data-pre-plain-text')                          
-                    time_and_sender = time_and_sender.replace("] ","]|").split("|")
-                        
-                    date_sent = time_and_sender[0].split(", ")[1].replace("]","")
-                    time_sent = time_and_sender[0].split(", ")[0].replace("[","")
-                    sender = time_and_sender[1].replace(": ","").replace("['","").replace("']","")
+            time.sleep(1)
+            
+            left_end = False
 
-                    if sender != name.text:
-                        sender = "You"
+            while not left_end:
 
-                    text_sent = img.get_attribute('alt').replace("’","'")
-                    text_sent = convert_emoji_to_text(text_sent)
+                media_details = driver.find_element(By.XPATH, '//div[@class="_ak8l"]')
+                media_sender = media_details.find_element(By.XPATH, 'div[@role="gridcell"]/div[1]/span[1]').text
+                date_time = media_details.find_element(By.XPATH, 'div[@class="_ak8j"]/div[1]').text
+                media_date = date_time.split(" at ")[0]
+                if media_date == "Today":
+                    media_date = date.today().strftime("%#m/%#d/%Y")
+                elif media_date == "Yesterday":
+                    media_date = (date.today() - timedelta(days= 1)).strftime("%#m/%#d/%Y")
                     
-                    
-                    message_detail = (name.text, date_sent, time_sent, sender, text_sent, "Images and texts", filename)
-                        
-                    if (text_sent != None and (not message_detail in message_elements)):
-                        message_elements.append(message_detail)
+                media_time = date_time.split(" at ")[1]
 
                 try:
-                    tmp = pic.find_element(By.XPATH, 'div[@class="x9f619 xyqdw3p x10ogl3i xg8j3zb x1k2j06m x1n2onr6 x1vjfegm xf58f5l"]')
-                    sender = name.text
-                    time_sent = tmp.text
-                    date_sent = "Unkown"
-                except:
-                    sender = "You"    
+                    media_text = driver.find_element(By.XPATH, '//p[@class="_alhd"]/span[@dir="auto"]').text
+                except NoSuchElementException:
+                    media_text = ""
 
-                if not haveText:
-                    message_detail = (name.text, date_sent, time_sent, sender, "", "Image", filename)   
-                    message_elements.append(message_detail)     
-        except NoSuchElementException:
-            continue
+                media_type = ""
+                try:
+                    image_block = driver.find_element(By.XPATH, '//div[@class="_ajuf _ajuh _ajui _ajug"]')
+                    if media_text == "":
+                        media_type = "Image"    
+                    else:
+                        media_type = "Image and texts"
+                        
+                except NoSuchElementException:
+                    if media_text == "":
+                        media_type = "Video"
+                    else:
+                        media_type = "Video and texts"   
+
+                try:
+                    download = driver.find_element(By.XPATH, '//div[@class="_ajv7"]/div[@title="Download"]')
+                    download.click()
+
+                    while len(os.listdir(distribute_path)) == 0 :
+                        pass
+
+                    if media_type == "Video" or media_type == "Video and texts":
+                        time.sleep(0.7)
+                        move_file("Videos")
+                    elif media_type == "Image" or media_type == "Image and texts":   
+                        time.sleep(0.7)
+                        move_file("Images") 
+                    
+                    
+                    media_text = media_text.replace("’","'")
+
+                    message_detail = (name.text, media_date, media_time, media_sender, media_text, media_type)
+                    message_elements.append(message_detail)
+
+                except NoSuchElementException:
+                    pass    
+
+                prev_btn = driver.find_element(By.XPATH, '//div[@class="_alhq"]/div[1]/div[@aria-label="Previous"]')
+                
+                if prev_btn.get_attribute('aria-disabled') == "true":
+                    left_end = True
+                else:
+                    prev_btn.click()
+                    time.sleep(1)
+                    
+
+            close_overlay = driver.find_element(By.XPATH, '//div[@class="_ajv7"]/div[@title="Close"]')
+            close_overlay.click()        
 
     for el in message_elements:
         if len(el) == 7:
-            cur.execute('INSERT INTO messages (chat, date, time, sender, texts, type, img_src) VALUES (?,?,?,?,?,?,?)',(el[0],str(el[1]),str(el[2]),str(el[3]),anonymise(el[4]),el[5],el[6]))  
+            cur.execute('INSERT INTO messages (chat, date, time, sender, texts, type, media_src) VALUES (?,?,?,?,?,?,?)'
+                        ,(el[0],str(el[1]),str(el[2]),str(el[3]),anonymise(el[4]),el[5],el[6]))  
         else:
-            cur.execute('INSERT INTO messages (chat, date, time, sender, texts, type, img_src) VALUES (?,?,?,?,?,?,?)',(el[0],str(el[1]),str(el[2]),str(el[3]),anonymise(el[4]),el[5],None))  
+            cur.execute('INSERT INTO messages (chat, date, time, sender, texts, type, media_src) VALUES (?,?,?,?,?,?,?)'
+                        ,(el[0],str(el[1]),str(el[2]),str(el[3]),anonymise(el[4]),el[5],None))  
         con.commit()  
 
     print("===========================================")    
@@ -448,6 +493,8 @@ def main():
     for el in entities:
         print(el)
     
+
+    driver.close()
     overview()    
   
 

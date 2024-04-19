@@ -43,8 +43,4 @@ results = cur.execute(date_query)
 #print(query)
 
 for result in results:
-    # if result[0] != contact_name:
-    #     print(("You",result[1]))
-    # else:    
-    #     print(result)
     print(result)

@@ -24,6 +24,8 @@ import shutil
 import time
 from datetime import date
 from datetime import timedelta
+import matplotlib.pyplot as plt
+import numpy as np
 
 global nlp
 global doc
@@ -325,7 +327,6 @@ def main():
             sync_ok_button = driver.find_element(By.XPATH, '//button[@class="emrlamx0 aiput80m h1a80dm5 sta02ykp g0rxnol2 l7jjieqr hnx8ox4h f8jlpxt4 l1l4so3b le5p0ye3 m2gb0jvt rfxpxord gwd8mfxi mnh9o63b qmy7ya1v dcuuyf4k swfxs4et bgr8sfoe a6r886iw fx1ldmn8 orxa12fk bkifpc9x rpz5dbxo bn27j4ou oixtjehm hjo1mxmu snayiamo szmswy5k"]')
             print("FOUND SYNC OK BUTTON")
                             
-            #if (sync_ok_button.text == 'OK'):
             sync_ok_button.click()
             clickedOnBtn = True
             print("CLICKED SYNC OK BUTTON")

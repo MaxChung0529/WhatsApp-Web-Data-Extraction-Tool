@@ -117,6 +117,8 @@ def msg_page(detail_header, content_frame, btn):
 
 def get_msg_data(contact_name, content_frame):
 
+    plt.close()
+
     global lbls
     global btns
     
@@ -277,8 +279,12 @@ def get_msg_data(contact_name, content_frame):
                 ORDER BY COUNT(*) desc'''
     
     dates = []
+    date_array = []
+    date_msg_num_array = []
 
     for result in con.execute(date_query):
+        date_array.append(result[0])
+        date_msg_num_array.append(result[1])
         dates.append(result)
 
     #Most messages sent in a day
@@ -302,9 +308,9 @@ def get_msg_data(contact_name, content_frame):
 
     dates_frame = tk.Frame(keywords_frame, height= 100, bg= "White")
     dates_frame.grid(row= 15, columnspan= 2, sticky= "ew")
-    dates_frame.grid_rowconfigure(0, weight= 1)
+    dates_frame.grid_rowconfigure(0, weight= 3)
     dates_frame.grid_rowconfigure(1, weight= 1)
-    dates_frame.grid_rowconfigure(2, weight= 1)
+    # dates_frame.grid_rowconfigure(2, weight= 1)
     dates_frame.grid_columnconfigure(0, weight= 1)
     dates_frame.grid_columnconfigure(1, weight= 1)
 
@@ -312,18 +318,19 @@ def get_msg_data(contact_name, content_frame):
     for date in dates:
         dates_only.append(date[0])     
 
-    dates_lbl = ttk.Label(dates_frame, text="Other dates: ", font=("Arial", current_font_size), background= "#fdfdfd")
+    dates_lbl = ttk.Label(dates_frame, text="Messages sent on different dates", font=("Arial", current_font_size), background= "#fdfdfd")
     dates_lbl.grid(row= 0, column= 0)
     lbls.append(dates_lbl)
-    dates_combo = ttk.Combobox(dates_frame, values= dates_only, width= current_font_size)
-    dates_combo.grid(row= 1, column= 0)
-    show_date_btn = tk.Button(dates_frame, text= "Show",  command= lambda:show_num(dates[dates_only.index(dates_combo.get())][1], dates_frame), width= 10, height= 1, font= ("Arial", current_font_size), relief= RAISED)
-    show_date_btn.grid(row= 2, column= 0)
+    # dates_combo = ttk.Combobox(dates_frame, values= dates_only, width= current_font_size)
+    # dates_combo.grid(row= 1, column= 0)
+    # show_date_btn = tk.Button(dates_frame, text= "Show graph",  command= lambda:show_num(dates[dates_only.index(dates_combo.get())][1], dates_frame), width= 10, height= 1, font= ("Arial", current_font_size), relief= RAISED)
+    show_date_btn = tk.Button(dates_frame, text= "Show graph", command= lambda: show_date_graph(date_array, date_msg_num_array), width= 10, height= 1, font= ("Arial", current_font_size), relief= RAISED)
+    show_date_btn.grid(row= 0, column= 1)
     btns.append(show_date_btn)
 
-    show_num_lbl = ttk.Label(dates_frame, text= "No. of messages", font=("Arial", current_font_size), background= "#fdfdfd")
-    show_num_lbl.grid(row= 0, column= 1)
-    lbls.append(show_num_lbl)
+    # show_num_lbl = ttk.Label(dates_frame, text= "No. of messages", font=("Arial", current_font_size), background= "#fdfdfd")
+    # show_num_lbl.grid(row= 0, column= 1)
+    # lbls.append(show_num_lbl)
 
 def keyword_page(detail_header, content_frame, btn):
     choose_btn(btn)
@@ -445,6 +452,14 @@ def open_videos_folder():
         os.startfile(path)
     elif platform == "darwin":
         subprocess.call(['open', path])
+
+def show_date_graph(x, y):
+    
+    plt.xlabel("Dates", fontweight='bold', color = 'black', fontsize='15', horizontalalignment='center')
+    plt.ylabel("Messages sent", fontweight='bold', color = 'black', fontsize='15', horizontalalignment='center')
+
+    plt.plot(x,y)
+    plt.show()
 
 def overview():
 
