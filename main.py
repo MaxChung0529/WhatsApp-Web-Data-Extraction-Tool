@@ -51,15 +51,6 @@ entities = []
 messages = []
 message_elements = []
 
-#Window initialisation
-window = tk.Tk()
-window.title('DATA EXTRACTION')
-window.geometry('1280x720')
-
-#Main frame to start
-main_frame = ttk.Frame(window, width= 1280, height= 720)
-main_frame.pack()
-
 con = sqlite3.connect("sqlite.db")
 cur = con.cursor()
 
@@ -78,16 +69,6 @@ video_query = '''//div[@role="row"]/div[1]/div[@class="message-in focusable-list
 |//div[@role="row"]/div[1]/div[@class="message-out focusable-list-item _amjy _amjz _amjw"]/div[@class="_amk4 _amkv _amk5"]/div[@class="_amk6 _amlo"]
 |//div[@role="row"]/div[1]/div[@class="_amkz message-out focusable-list-item _amjy _amjz _amjw"]//div[@class="_amk4 _amkv"]/div[@class="_amk6 _amlo"]
 |//div[@role="row"]/div[1]/div[@class="_amkz message-in focusable-list-item _amjy _amjz _amjw"]//div[@class="_amk4 _amkv"]/div[@class="_amk6 _amlo"]'''
-
-def start_window():
-
-    start_btn = ttk.Button(master= main_frame, width= 30,  text= "Start extraction", command= main)
-    start_btn.place(relx=0.5, rely=0.5, anchor= "center")
-
-    #Run
-    window.mainloop()
-    
-    loading()
 
 def loading():
     for child in main_frame.winfo_children():
@@ -498,7 +479,6 @@ def main():
   
 
 if __name__ == '__main__':
-    # start_window()
     main()
             
 
