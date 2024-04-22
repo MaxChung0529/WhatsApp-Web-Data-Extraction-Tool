@@ -318,16 +318,10 @@ def get_msg_data(contact_name, content_frame):
     dates_lbl = ttk.Label(dates_frame, text="Messages sent on different dates", font=("Arial", current_font_size), background= "#fdfdfd")
     dates_lbl.grid(row= 0, column= 0)
     lbls.append(dates_lbl)
-    # dates_combo = ttk.Combobox(dates_frame, values= dates_only, width= current_font_size)
-    # dates_combo.grid(row= 1, column= 0)
-    # show_date_btn = tk.Button(dates_frame, text= "Show graph",  command= lambda:show_num(dates[dates_only.index(dates_combo.get())][1], dates_frame), width= 10, height= 1, font= ("Arial", current_font_size), relief= RAISED)
+
     show_date_btn = tk.Button(dates_frame, text= "Show graph", command= lambda: show_date_graph(date_array, date_msg_num_array), width= 10, height= 1, font= ("Arial", current_font_size), relief= RAISED)
     show_date_btn.grid(row= 0, column= 1)
     btns.append(show_date_btn)
-
-    # show_num_lbl = ttk.Label(dates_frame, text= "No. of messages", font=("Arial", current_font_size), background= "#fdfdfd")
-    # show_num_lbl.grid(row= 0, column= 1)
-    # lbls.append(show_num_lbl)
 
 def keyword_page(detail_header, content_frame, btn):
     choose_btn(btn)
@@ -460,14 +454,6 @@ def show_date_graph(x, y):
 
 def overview():
 
-    #Window initialisation
-    # window = tk.Tk()
-    # window.title('DATA OVERVIEW')
-    # window.geometry('1280x720')
-    # window.grid_columnconfigure(0, weight= 1)
-    # window.grid_columnconfigure(1, weight= 12)
-    # window.grid_rowconfigure(0, weight= 1)
-
     windowScreen = tk.Tk()
     windowScreen.title('DATA OVERVIEW')
     windowScreen.geometry('1280x720')
@@ -555,6 +541,7 @@ def overview():
     main_page(detail_header, content_frame)
 
     change_font_size("MIDDLE", md_font_btn)
+    
     #Run
     window.mainloop()
 

@@ -187,9 +187,6 @@ def ner(masked_doc):
     #Insert into entity lists
     for ent in ents:
 
-        # if (not ent.label_ in categories):
-        #     ents.remove(ent)
-
         if (ent.label_ in categories):
             
             if (ent.label_ == "PERSON"):
@@ -220,26 +217,28 @@ def anonymise(text):
     doc = nlp(text)
 
     masked_text = maskText(masked_text, doc)
-    #demojised_masked_text = re.sub("\:.*?\:","",masked_text)
 
-    #masked_doc = nlp(demojised_masked_text)
     masked_doc = nlp(masked_text)
     masked_doc = ner(masked_doc)
 
     return masked_text        
 
-    # #Make sure there are entities
+    # Visualisation
     # if (len(list(masked_doc.ents)) > 0):
     #     displacy.serve(masked_doc, style="ent",auto_select_port=True)    
 
+#Clear folders contain images and videos
 def clear_folders():
     shutil.rmtree(images_path)
     os.makedirs(images_path)
+
     shutil.rmtree(videos_path)
     os.makedirs(videos_path)
+    
     shutil.rmtree(distribute_path)
     os.makedirs(distribute_path)
 
+#Move files from distribute to videos and images
 def move_file(file_type):
     
     while True:
