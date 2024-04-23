@@ -70,12 +70,12 @@ video_query = '''//div[@role="row"]/div[1]/div[@class="message-in focusable-list
 |//div[@role="row"]/div[1]/div[@class="_amkz message-out focusable-list-item _amjy _amjz _amjw"]//div[@class="_amk4 _amkv"]/div[@class="_amk6 _amlo"]
 |//div[@role="row"]/div[1]/div[@class="_amkz message-in focusable-list-item _amjy _amjz _amjw"]//div[@class="_amk4 _amkv"]/div[@class="_amk6 _amlo"]'''
 
-def loading():
-    for child in main_frame.winfo_children():
-        child.destroy()
+# def loading():
+#     for child in main_frame.winfo_children():
+#         child.destroy()
 
-    loading_lbl = ttk.Label(master= main_frame, text= "Extracting data...", font=("Arial", 25))
-    loading_lbl.place(relx= 0.5, rely= 0.5, anchor= "center")    
+#     loading_lbl = ttk.Label(master= main_frame, text= "Extracting data...", font=("Arial", 25))
+#     loading_lbl.place(relx= 0.5, rely= 0.5, anchor= "center")    
 
 def maskText(masked_text, doc):
     matcher = Matcher(nlp.vocab, validate=True)

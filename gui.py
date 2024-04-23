@@ -129,7 +129,7 @@ def get_msg_data(contact_name, content_frame):
     
     chat_results = cur.execute(chat_num_query)
 
-    keywords_frame = tk.Frame(content_frame, width= 700, height= 600, background= "White", highlightbackground= "Gray", highlightthickness= 2)
+    keywords_frame = tk.Frame(content_frame, width= 700, height= 600, highlightbackground= "Gray", highlightthickness= 2)
     keywords_frame.propagate(False)
     keywords_frame.grid_propagate(False)
     keywords_frame.place(relx= 0.6, rely= 0.5, anchor= "center")
@@ -303,7 +303,7 @@ def get_msg_data(contact_name, content_frame):
     separator = ttk.Separator(keywords_frame, orient='horizontal')
     separator.grid(row= 14, columnspan= 2, sticky= "ew")
 
-    dates_frame = tk.Frame(keywords_frame, height= 100, bg= "White")
+    dates_frame = tk.Frame(keywords_frame, height= 100)
     dates_frame.grid(row= 15, columnspan= 2, sticky= "ew")
     dates_frame.grid_rowconfigure(0, weight= 3)
     dates_frame.grid_rowconfigure(1, weight= 1)
@@ -363,7 +363,7 @@ def get_keywords(category, content_frame):
                             LIMIT 10'''
     
     results = cur.execute(entity_query)
-    keywords_frame = tk.Frame(content_frame, width= 700, height= 600, background= "White", highlightbackground= "Gray", highlightthickness= 2)
+    keywords_frame = tk.Frame(content_frame, width= 700, height= 600, highlightbackground= "Gray", highlightthickness= 2)
     keywords_frame.propagate(False)
     keywords_frame.grid_propagate(False)
     keywords_frame.place(relx= 0.6, rely= 0.5, anchor= "center")
