@@ -210,14 +210,28 @@ def anonymise(text):
 
 #Clear folders contain images and videos
 def clear_folders():
-    shutil.rmtree(images_path)
-    os.makedirs(images_path)
+    try:
+        shutil.rmtree(images_path)
+    except FileNotFoundError:
+        os.makedirs(images_path)
+    else:
+        os.makedirs(images_path)
 
-    shutil.rmtree(videos_path)
-    os.makedirs(videos_path)
+    try:
+        shutil.rmtree(videos_path)
+    except FileNotFoundError:
+        os.makedirs(videos_path)
+    else:
+        os.makedirs(videos_path)
+
+    try:
+        shutil.rmtree(distribute_path)
+    except FileNotFoundError:
+        os.makedirs(distribute_path)
+    else:
+        os.makedirs(distribute_path)
+
     
-    shutil.rmtree(distribute_path)
-    os.makedirs(distribute_path)
 
 #Move files from distribute to videos and images
 def move_file(file_type):
