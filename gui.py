@@ -72,7 +72,7 @@ def change_font_size(size, font_btn):
 def show_num(num, dates_frame):
     global lbls
 
-    show_num = ttk.Label(dates_frame, text= str(num), font=("Arial", current_font_size), background= "#fdfdfd")
+    show_num = ttk.Label(dates_frame, text= str(num), font=("Arial", current_font_size) )
     lbls.append(show_num)
     show_num.grid(row= 1, column= 1, rowspan= 2)
 
@@ -154,24 +154,24 @@ def get_msg_data(contact_name, content_frame):
             user_num += result[1]    
 
     #Total messages sent
-    total_label = ttk.Label(keywords_frame, text= "Total messages sent: ", font=("Arial", current_font_size), background= "#fdfdfd")
+    total_label = ttk.Label(keywords_frame, text= "Total messages sent: ", font=("Arial", current_font_size) )
     total_label.grid(row= 0, column= 0)
     lbls.append(total_label)
-    num_label = ttk.Label(keywords_frame, text= str(msg_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    num_label = ttk.Label(keywords_frame, text= str(msg_num), font=("Arial", current_font_size) )
     num_label.grid(row= 0, column= 1)
     lbls.append(num_label)
     
-    user_label = ttk.Label(keywords_frame, text= "No. messages sent by you:", font=("Arial", current_font_size), background= "#fdfdfd")
+    user_label = ttk.Label(keywords_frame, text= "No. messages sent by you:", font=("Arial", current_font_size) )
     user_label.grid(row= 1, column= 0)
     lbls.append(user_label)
-    user_num_label = ttk.Label(keywords_frame, text= str(user_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    user_num_label = ttk.Label(keywords_frame, text= str(user_num), font=("Arial", current_font_size) )
     user_num_label.grid(row= 1, column= 1)
     lbls.append(user_num_label)
     
-    other_user_label = ttk.Label(keywords_frame, text= f"No. messages sent by {contact_name}:", font=("Arial", current_font_size), background= "#fdfdfd")
+    other_user_label = ttk.Label(keywords_frame, text= f"No. messages sent by {contact_name}:", font=("Arial", current_font_size) )
     other_user_label.grid(row= 2, column= 0)
     lbls.append(other_user_label)
-    other_user_num_label = ttk.Label(keywords_frame, text= str(other_user_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    other_user_num_label = ttk.Label(keywords_frame, text= str(other_user_num), font=("Arial", current_font_size) )
     other_user_num_label.grid(row= 2, column= 1)
     lbls.append(other_user_num_label)
 
@@ -199,24 +199,24 @@ def get_msg_data(contact_name, content_frame):
             user_img_num += result[1]    
 
     #Total images sent
-    total_img_label = ttk.Label(keywords_frame, text= "Total images sent: ", font=("Arial", current_font_size), background= "#fdfdfd")
+    total_img_label = ttk.Label(keywords_frame, text= "Total images sent: ", font=("Arial", current_font_size) )
     total_img_label.grid(row= 4, column= 0)
     lbls.append(total_img_label)
     num_label = ttk.Label(keywords_frame, text= str(img_total), font=("Arial", current_font_size))
     num_label.grid(row= 4, column= 1)
     lbls.append(num_label)
     
-    user_img_label = ttk.Label(keywords_frame, text= "No. images sent by you:", font=("Arial", current_font_size), background= "#fdfdfd")
+    user_img_label = ttk.Label(keywords_frame, text= "No. images sent by you:", font=("Arial", current_font_size) )
     user_img_label.grid(row= 5, column= 0)
     lbls.append(user_img_label)
-    user_img_num_label = ttk.Label(keywords_frame, text= str(user_img_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    user_img_num_label = ttk.Label(keywords_frame, text= str(user_img_num), font=("Arial", current_font_size) )
     user_img_num_label.grid(row= 5, column= 1)
     lbls.append(user_img_num_label)
     
-    other_user_img_label = ttk.Label(keywords_frame, text= f"No. images sent by {contact_name}:", font=("Arial", current_font_size), background= "#fdfdfd")
+    other_user_img_label = ttk.Label(keywords_frame, text= f"No. images sent by {contact_name}:", font=("Arial", current_font_size) )
     other_user_img_label.grid(row= 6, column= 0)
     lbls.append(other_user_img_label)
-    other_user_img_num_label = ttk.Label(keywords_frame, text= str(other_user_img_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    other_user_img_num_label = ttk.Label(keywords_frame, text= str(other_user_img_num), font=("Arial", current_font_size) )
     other_user_img_num_label.grid(row= 6, column= 1)
     lbls.append(other_user_img_num_label)
     
@@ -244,24 +244,24 @@ def get_msg_data(contact_name, content_frame):
             user_vid_num += result[1]    
 
     #Total images sent
-    total_vid_label = ttk.Label(keywords_frame, text= "Total videos sent: ", font=("Arial", current_font_size), background= "#fdfdfd")
+    total_vid_label = ttk.Label(keywords_frame, text= "Total videos sent: ", font=("Arial", current_font_size) )
     total_vid_label.grid(row= 8, column= 0)
     lbls.append(total_vid_label)
     num_label = ttk.Label(keywords_frame, text= str(vid_total), font=("Arial", current_font_size))
     num_label.grid(row= 8, column= 1)
     lbls.append(num_label)
     
-    user_vid_label = ttk.Label(keywords_frame, text= "No. videos sent by you:", font=("Arial", current_font_size), background= "#fdfdfd")
+    user_vid_label = ttk.Label(keywords_frame, text= "No. videos sent by you:", font=("Arial", current_font_size) )
     user_vid_label.grid(row= 9, column= 0)
     lbls.append(user_vid_label)
-    user_vid_num_label = ttk.Label(keywords_frame, text= str(user_vid_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    user_vid_num_label = ttk.Label(keywords_frame, text= str(user_vid_num), font=("Arial", current_font_size) )
     user_vid_num_label.grid(row= 9, column= 1)
     lbls.append(user_vid_num_label)
     
-    other_user_vid_label = ttk.Label(keywords_frame, text= f"No. videos sent by {contact_name}:", font=("Arial", current_font_size), background= "#fdfdfd")
+    other_user_vid_label = ttk.Label(keywords_frame, text= f"No. videos sent by {contact_name}:", font=("Arial", current_font_size) )
     other_user_vid_label.grid(row= 10, column= 0)
     lbls.append(other_user_vid_label)
-    other_user_vid_num_label = ttk.Label(keywords_frame, text= str(other_user_vid_num), font=("Arial", current_font_size), background= "#fdfdfd")
+    other_user_vid_num_label = ttk.Label(keywords_frame, text= str(other_user_vid_num), font=("Arial", current_font_size) )
     other_user_vid_num_label.grid(row= 10, column= 1)
     lbls.append(other_user_vid_num_label)
     
@@ -285,17 +285,17 @@ def get_msg_data(contact_name, content_frame):
         dates.append(result)
 
     #Most messages sent in a day
-    most_msg_lbl = ttk.Label(keywords_frame, text= "Most messages sent on: ", font=("Arial", current_font_size), background= "#fdfdfd")
+    most_msg_lbl = ttk.Label(keywords_frame, text= "Most messages sent on: ", font=("Arial", current_font_size) )
     most_msg_lbl.grid(row= 12, column= 0)
     lbls.append(most_msg_lbl)
-    date_label = ttk.Label(keywords_frame, text= str(dates[0][0]), font=("Arial", current_font_size), background= "#fdfdfd")
+    date_label = ttk.Label(keywords_frame, text= str(dates[0][0]), font=("Arial", current_font_size) )
     date_label.grid(row= 12, column= 1)
     lbls.append(date_label)
 
-    date_msg_lbl = ttk.Label(keywords_frame, text= f"No. messages sent on {dates[0][0]}:", font=("Arial", current_font_size), background= "#fdfdfd")
+    date_msg_lbl = ttk.Label(keywords_frame, text= f"No. messages sent on {dates[0][0]}:", font=("Arial", current_font_size) )
     date_msg_lbl.grid(row= 13, column= 0)
     lbls.append(date_msg_lbl)
-    date_msg_num_label = ttk.Label(keywords_frame, text= str(dates[0][1]), font=("Arial", current_font_size), background= "#fdfdfd")
+    date_msg_num_label = ttk.Label(keywords_frame, text= str(dates[0][1]), font=("Arial", current_font_size) )
     date_msg_num_label.grid(row= 13, column= 1)
     lbls.append(date_msg_num_label)
     
@@ -315,7 +315,7 @@ def get_msg_data(contact_name, content_frame):
     for date in dates:
         dates_only.append(date[0])     
 
-    dates_lbl = ttk.Label(dates_frame, text="Messages sent on different dates", font=("Arial", current_font_size), background= "#fdfdfd")
+    dates_lbl = ttk.Label(dates_frame, text="Messages sent on different dates", font=("Arial", current_font_size) )
     dates_lbl.grid(row= 0, column= 0)
     lbls.append(dates_lbl)
 
@@ -378,19 +378,19 @@ def get_keywords(category, content_frame):
     separator = ttk.Separator(keywords_frame, orient='vertical')
     separator.grid(rowspan= 11, column= 1, sticky= "ns")
     
-    entity_label = ttk.Label(keywords_frame, text= "Keywords ", font=("Arial", current_font_size), background= "#fdfdfd")
+    entity_label = ttk.Label(keywords_frame, text= "Keywords ", font=("Arial", current_font_size) )
     entity_label.grid(row= 0, column= 0)
     lbls.append(entity_label)
-    num_label = ttk.Label(keywords_frame, text= " Appearance", font=("Arial", current_font_size), background= "#fdfdfd")
+    num_label = ttk.Label(keywords_frame, text= " Appearance", font=("Arial", current_font_size) )
     num_label.grid(row= 0, column= 2)
     lbls.append(num_label)
     
     count = 1
     for row in results:
-        tmp_ent_lbl = ttk.Label(keywords_frame, text= row[0], font=("Arial", current_font_size), background= "#fdfdfd")
+        tmp_ent_lbl = ttk.Label(keywords_frame, text= row[0], font=("Arial", current_font_size) )
         tmp_ent_lbl.grid(row= count, column= 0)
         lbls.append(tmp_ent_lbl)
-        tmp_num_lbl = ttk.Label(keywords_frame, text= row[1], font=("Arial", current_font_size), background= "#fdfdfd") 
+        tmp_num_lbl = ttk.Label(keywords_frame, text= row[1], font=("Arial", current_font_size) ) 
         tmp_num_lbl.grid(row= count, column= 2)
         lbls.append(tmp_num_lbl)
         count += 1
