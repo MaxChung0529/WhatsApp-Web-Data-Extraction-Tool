@@ -45,5 +45,3 @@ The tool will anonymise the following sensitive information by recognising certa
 * Number of messages sent <b><i>GROUPED BY</i></b> date
   ![GUI Demo](https://imgur.com/55WEsoF.png)
 
-## Demo
-
