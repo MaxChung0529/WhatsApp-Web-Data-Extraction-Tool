@@ -43,5 +43,6 @@ The tool will anonymise the following sensitive information by recognising certa
 * Number of <b><i>images</i></b> sent by each party in a chat
 * Number of <b><i>videos</i></b> sent by each party in a chat
 * Number of messages sent <b><i>GROUPED BY</i></b> date
-  ![GUI Demo](https://imgur.com/55WEsoF.png)
+  ![GUI Demo1](https://imgur.com/sSnIwKh.png)
+  ![GUI Demo2](https://imgur.com/5ZFAiPi.png)
 
